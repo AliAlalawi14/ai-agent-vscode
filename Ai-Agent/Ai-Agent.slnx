@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Ai-Agent/Ai-Agent.csproj" />
+  <Project Path="Ai-Agent.Tests/Ai-Agent.Tests.csproj" />
+  <Project Path="Ai-Agent.Evals/Ai-Agent.Evals.csproj" />
+</Solution>

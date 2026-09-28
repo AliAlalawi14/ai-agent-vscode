@@ -1,0 +1,37 @@
+# ── .NET (backend, tests, evals) ──
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+
+# Local config with machine paths (secrets live in user-secrets, never in files)
+**/appsettings.Development.json
+
+# Agent runtime files
+logs/
+.ai_changes.ndjson
+Ai-Agent/evals/results/*.json
+Ai-Agent/evals/results/*.md
+!Ai-Agent/evals/results/baseline.json
+
+# ── Extension (Node) ──
+node_modules/
+ai-chat-extension/dist/
+ai-chat-extension/out/
+ai-chat-extension/webview-ui/build/
+ai-chat-extension/.vscode-test/
+*.vsix
+
+# ── Other projects / backups in this folder ──
+AI-Hunter-Jobs/
+.git-backup-*/
+
+# ── OS / editors ──
+.DS_Store
+Thumbs.db
+.idea/
+
+# Local vector store data and other tools' configs
+**/chroma/
+.qwen/

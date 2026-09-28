@@ -1,0 +1,10 @@
+<Project>
+  <!--
+    Stops MSBuild from picking up C:\Users\alial\Desktop\Directory.Packages.props
+    (MSBuild imports only the nearest Directory.Packages.props). This solution keeps
+    package versions in Ai-Agent.csproj instead of using Central Package Management.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>

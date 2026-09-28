@@ -1,0 +1,253 @@
+/* Animations & Keyframes */
+
+/* Message Entry Animation */
+@keyframes message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-enter {
+  animation: message-enter var(--transition-normal) ease-out;
+}
+
+/* Typing Indicator - Bouncing Dots */
+@keyframes typing-bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
+}
+
+.typing-dot {
+  animation: typing-bounce 1.4s infinite ease-in-out both;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+/* Pulse Animation for Streaming */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.streaming-pulse {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Shimmer Loading Effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-secondary) 25%,
+    var(--color-bg-tertiary) 50%,
+    var(--color-bg-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Fade In */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fade-in var(--transition-fast) ease-out;
+}
+
+/* Slide In From Right */
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-right {
+  animation: slide-in-right var(--transition-normal) ease-out;
+}
+
+/* Slide In From Left */
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-left {
+  animation: slide-in-left var(--transition-normal) ease-out;
+}
+
+/* Scale In */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scale-in {
+  animation: scale-in var(--transition-fast) ease-out;
+}
+
+/* Tool Card Entry */
+@keyframes tool-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.tool-enter {
+  animation: tool-enter var(--transition-fast) ease-out;
+}
+
+/* Spin Animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Pulse Ring */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+.pulse-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--color-accent);
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+/* Code Block Glow */
+@keyframes code-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 122, 204, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px 2px rgba(0, 122, 204, 0.1);
+  }
+}
+
+.code-glow {
+  animation: code-glow 3s ease-in-out infinite;
+}
+
+/* Toast Slide Up */
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(100%) translateX(-50%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(-50%);
+  }
+}
+
+.toast-enter {
+  animation: toast-enter var(--transition-normal) ease-out;
+}
+
+/* Dropdown Menu */
+@keyframes dropdown-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.dropdown-enter {
+  animation: dropdown-enter var(--transition-fast) ease-out;
+  transform-origin: top;
+}
+
+/* Smooth height transition */
+.height-transition {
+  transition: height var(--transition-normal), max-height var(--transition-normal);
+}
+
+/* Focus ring animation */
+@keyframes focus-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--color-accent-light);
+  }
+  50% {
+    box-shadow: 0 0 0 3px var(--color-accent-light);
+  }
+}
+
+.focus-pulse:focus {
+  animation: focus-pulse 2s ease-in-out infinite;
+}

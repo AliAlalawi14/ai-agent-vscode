@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "target": "ES2022",
+    "lib": [
+      "ES2022" // High-level JavaScript features
+    ],
+    "types": [
+      "node" // Tells TS that globals like console, fetch, and TextDecoder exist via Node
+    ],
+    "sourceMap": true,
+    "rootDir": "src",
+    "strict": true
+  },
+  "exclude": ["node_modules", "out", "webview-ui"]
+}

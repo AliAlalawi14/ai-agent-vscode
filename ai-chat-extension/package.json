@@ -1,0 +1,124 @@
+{
+  "name": "ai-chat-extension",
+  "displayName": "ai-chat-extension",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.120.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ai-chat-sidebar-container",
+          "title": "AI Assistant",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "ai-chat-sidebar-container": [
+        {
+          "type": "webview",
+          "id": "ai-chat-sidebar",
+          "name": "Chat",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "aiChat.openSidebar",
+        "title": "AI Chat: Open Sidebar"
+      },
+      {
+        "command": "aiChat.newChat",
+        "title": "AI Chat: New Conversation"
+      },
+      {
+        "command": "aiChat.askAboutSelection",
+        "title": "AI Chat: Ask About Selection"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "aiChat.openSidebar",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l"
+      },
+      {
+        "command": "aiChat.askAboutSelection",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a",
+        "when": "editorHasSelection"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "aiChat.askAboutSelection",
+          "when": "editorHasSelection",
+          "group": "ai-chat@1"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AI Chat",
+      "properties": {
+        "aiChat.backendUrl": {
+          "type": "string",
+          "default": "http://localhost:5036",
+          "description": "URL of the AI agent backend server"
+        },
+        "aiChat.apiToken": {
+          "type": "string",
+          "default": "",
+          "description": "Shared token sent as X-Agent-Token; must match the backend's Agent:ApiToken"
+        },
+        "aiChat.streamTimeout": {
+          "type": "number",
+          "default": 120000,
+          "description": "Timeout in milliseconds for streaming responses"
+        },
+        "aiChat.diffViewMode": {
+          "type": "string",
+          "enum": ["side-by-side", "inline"],
+          "default": "side-by-side",
+          "description": "How to display file change diffs"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build:all",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test",
+    "webview:dev": "cd webview-ui && npm run dev",
+    "webview:build": "cd webview-ui && npm run build:extension",
+    "build:all": "npm run webview:build && npm run package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.120.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "typescript-eslint": "^8.56.1",
+    "eslint": "^9.39.3",
+    "typescript": "^5.9.3",
+    "ts-loader": "^9.5.4",
+    "webpack": "^5.105.3",
+    "webpack-cli": "^6.0.1",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
