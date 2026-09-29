@@ -2,7 +2,7 @@
   "name": "ai-chat-extension",
   "displayName": "AI Agent",
   "description": "A coding agent that plans with you, makes changes you approve, and manages which AI model does what.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "icon": "resources/logo.png",
   "galleryBanner": {
     "color": "#4F46E5",
