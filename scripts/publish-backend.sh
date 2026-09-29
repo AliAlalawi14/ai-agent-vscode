@@ -13,5 +13,6 @@ dotnet publish "$ROOT/Ai-Agent/Ai-Agent/Ai-Agent.csproj" \
   -c Release -r "$RID" --self-contained true \
   -p:PublishSingleFile=false -p:DebugType=None \
   -o "$OUT"
-chmod +x "$OUT/Ai-Agent"
+# Windows builds produce Ai-Agent.exe, which needs no execute bit
+[[ "$RID" == win-* ]] || chmod +x "$OUT/Ai-Agent"
 echo "Backend published to $OUT"
