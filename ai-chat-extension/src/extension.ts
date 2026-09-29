@@ -4,6 +4,7 @@ import { recordLoadedBundles } from './services/buildInfo';
 import { BackendProcess, PROVIDER_KEYS } from './services/BackendProcess';
 import { setBackendProcess } from './services/backendConnection';
 import { registerProviderCommands } from './services/providerCommands';
+import { StoatInlineProvider } from './completion/inlineProvider';
 
 let mcpRestart: ReturnType<typeof setTimeout> | undefined;
 
@@ -54,6 +55,9 @@ export function activate(context: vscode.ExtensionContext): void {
       mcpRestart = setTimeout(() => { void backend.restartIfRunning(); }, 400);
     })
   );
+
+  // Inline autocomplete (off until a provider and model are chosen in Settings → Autocomplete)
+  context.subscriptions.push(new StoatInlineProvider(context));
 
   const provider = new ChatViewProvider(context.extensionUri, context);
 

@@ -120,7 +120,11 @@ export type WebviewMessage =
   | { type: "addMcpPreset"; presetId: string; values: Record<string, string> }
   // Web tools (Settings → Web)
   | { type: "getWeb" }
-  | { type: "saveWeb"; fetch: "ask" | "allow" | "off"; searchProvider: "" | "brave" | "tavily" | "searxng"; searchKey?: string; searxngUrl?: string };
+  | { type: "saveWeb"; fetch: "ask" | "allow" | "off"; searchProvider: "" | "brave" | "tavily" | "searxng"; searchKey?: string; searxngUrl?: string }
+  // Autocomplete (Settings → Autocomplete)
+  | { type: "getCompletion" }
+  | { type: "saveCompletion"; settings: CompletionSettings }
+  | { type: "testCompletion"; settings: CompletionSettings };
 
 // Extension -> Webview
 export type ExtensionMessage =
@@ -184,6 +188,8 @@ export type ExtensionMessage =
   | { type: "providerSaved"; ok: boolean; error?: string }
   | { type: "mcpState"; state: McpState }
   | { type: "webState"; state: WebState }
+  | { type: "completionState"; state: CompletionState }
+  | { type: "completionTest"; ok: boolean; text?: string; ms?: number; error?: string }
   /** Result of an MCP change (the servers restart; mcpState follows) */
   | { type: "mcpResult"; ok: boolean; message: string }
   | {
@@ -387,4 +393,17 @@ export interface WebState {
   searchProvider: "" | "brave" | "tavily" | "searxng";
   hasSearchKey: boolean;
   searxngUrl: string;
+}
+
+// ── Autocomplete ────────────────────────────────────────────────────────
+
+export interface CompletionSettings {
+  enabled: boolean;
+  provider: string;
+  model: string;
+  style: "auto" | "completions" | "mistral" | "ollama" | "chat";
+}
+
+export interface CompletionState extends CompletionSettings {
+  providers: Array<{ id: string; label: string; models: string[]; detectedStyle: string }>;
 }

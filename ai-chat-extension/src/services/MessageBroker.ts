@@ -18,6 +18,8 @@ import { BackendProcess } from "./BackendProcess";
 import { configuredProviders, listProviderModels, removeProvider, saveProvider, setupPresets } from "./providerSetup";
 import { McpPanelService } from "./mcpPanel";
 import { WEB_SEARCH_KEY_SECRET } from "./BackendProcess";
+import { completionProviders, resolveEndpoint } from "../completion/inlineProvider";
+import { CompletionEngine, buildContext } from "../completion/core";
 import { reverseApplyUnifiedPatch } from "./patchUtils";
 import { findStaleBundles, recordLoadedBundles } from "./buildInfo";
 
@@ -265,6 +267,24 @@ export class MessageBroker {
         await this.mcp.handle(message);
         break;
 
+      case "getCompletion":
+        await this.postCompletionState();
+        break;
+
+      case "saveCompletion": {
+        const c = vscode.workspace.getConfiguration("aiChat.completion");
+        await c.update("enabled", message.settings.enabled, vscode.ConfigurationTarget.Global);
+        await c.update("provider", message.settings.provider, vscode.ConfigurationTarget.Global);
+        await c.update("model", message.settings.model, vscode.ConfigurationTarget.Global);
+        await c.update("style", message.settings.style, vscode.ConfigurationTarget.Global);
+        await this.postCompletionState();
+        break;
+      }
+
+      case "testCompletion":
+        await this.handleTestCompletion(message.settings);
+        break;
+
       case "getWeb":
         await this.postWebState();
         break;
@@ -494,6 +514,47 @@ export class MessageBroker {
       });
     }
     await this.postSetupState();
+  }
+
+  private async postCompletionState(): Promise<void> {
+    const c = vscode.workspace.getConfiguration("aiChat.completion");
+    this.postMessage({
+      type: "completionState",
+      state: {
+        enabled: c.get<boolean>("enabled", false),
+        provider: c.get<string>("provider", "") ?? "",
+        model: c.get<string>("model", "") ?? "",
+        style: (c.get<string>("style", "auto") ?? "auto") as "auto",
+        providers: await completionProviders(this.context.secrets),
+      },
+    });
+  }
+
+  /** "Try it": one real completion with the settings in the form (saved or not). */
+  private async handleTestCompletion(settings: { provider: string; model: string; style: string }): Promise<void> {
+    const endpoint = await resolveEndpoint(this.context.secrets, {
+      provider: settings.provider,
+      model: settings.model,
+      style: settings.style as "auto",
+    });
+    if (!endpoint || !endpoint.model) {
+      this.postMessage({ type: "completionTest", ok: false, error: "Pick a provider and a model first (and check its key)." });
+      return;
+    }
+    const sample = "function isEven(n: number): boolean {\n  return \n}\n";
+    const ctx = buildContext(sample, sample.indexOf("return ") + "return ".length, "typescript", "sample.ts");
+    try {
+      const result = await new CompletionEngine().complete(endpoint, ctx);
+      this.postMessage({
+        type: "completionTest",
+        ok: result.text.length > 0,
+        text: result.text,
+        ms: result.ms,
+        ...(result.text.length === 0 ? { error: "The model returned nothing. Try another model or the Chat style." } : {}),
+      });
+    } catch (error) {
+      this.postMessage({ type: "completionTest", ok: false, error: error instanceof Error ? error.message : String(error) });
+    }
   }
 
   private async postWebState(): Promise<void> {

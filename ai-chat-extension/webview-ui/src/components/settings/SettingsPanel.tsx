@@ -6,6 +6,7 @@ import { vscode } from '../../services/vscodeApi'
 import { ProviderSetup } from '../setup/ProviderSetup'
 import { McpSettings } from './McpSettings'
 import { WebSettings } from './WebSettings'
+import { AutocompleteSettings } from './AutocompleteSettings'
 
 interface SettingsPanelProps {
   onClose: () => void
@@ -150,6 +151,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, startAddi
 
           {/* Web tools */}
           {!external && <WebSettings />}
+
+          {/* Inline autocomplete */}
+          <AutocompleteSettings />
 
           {/* Backend */}
           <div>

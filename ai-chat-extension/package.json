@@ -89,6 +89,14 @@
         "title": "Stoat: Add Provider (Gemini, OpenAI, Mistral, Ollama…)"
       },
       {
+        "command": "aiChat.completion.toggle",
+        "title": "Stoat: Toggle Autocomplete"
+      },
+      {
+        "command": "aiChat.completion.menu",
+        "title": "Stoat: Autocomplete Menu"
+      },
+      {
         "command": "aiChat.removeProvider",
         "title": "Stoat: Remove Provider"
       }
@@ -136,6 +144,40 @@
               "disabledTools": { "type": "array", "items": { "type": "string" } }
             }
           }
+        },
+        "aiChat.completion.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Inline autocomplete (ghost text, Tab to accept). Set up the provider and model in the chat panel's Settings → Autocomplete."
+        },
+        "aiChat.completion.provider": {
+          "type": "string",
+          "default": "",
+          "description": "Provider for autocomplete: \"deepseek\" or the name of a provider added in the panel (e.g. an Ollama or Mistral provider)."
+        },
+        "aiChat.completion.model": {
+          "type": "string",
+          "default": "",
+          "description": "Model for autocomplete. Fill-in-the-middle code models work best (e.g. qwen2.5-coder base models on Ollama, codestral-latest on Mistral, deepseek-chat)."
+        },
+        "aiChat.completion.style": {
+          "type": "string",
+          "enum": ["auto", "completions", "mistral", "ollama", "chat"],
+          "enumDescriptions": ["Detect from the provider", "Fill-in-the-middle via /completions with suffix (DeepSeek, llama.cpp, vLLM…)", "Mistral /fim/completions (Codestral)", "Ollama /api/generate with suffix", "Chat model instructions (any chat model, slower)"],
+          "default": "auto",
+          "description": "How the model is asked to fill in code."
+        },
+        "aiChat.completion.debounceMs": {
+          "type": "number",
+          "default": 300,
+          "minimum": 50,
+          "description": "Wait this long after typing stops before asking for a suggestion."
+        },
+        "aiChat.completion.maxLines": {
+          "type": "number",
+          "default": 8,
+          "minimum": 1,
+          "description": "Longest suggestion, in lines."
         },
         "aiChat.web.fetch": {
           "type": "string",
