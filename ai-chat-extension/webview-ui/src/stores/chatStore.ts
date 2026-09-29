@@ -72,6 +72,8 @@ interface ChatState {
   setLimitReached: (steps: number | null) => void
   /** Removes an assistant message that never received any content (e.g. the request failed) */
   removeIfEmpty: (id: string) => void
+  /** Stop: ends the run in the UI at once (no waiting for the stream): the reply is closed with a note, tools stop spinning */
+  stopRun: () => void
   setError: (error: string | null) => void
   clearChat: () => void
   hydrateState: (messages: Message[], activeTools: ToolExecution[], toolHistory: ToolExecution[]) => void
@@ -268,6 +270,32 @@ export const useChatStore = create<ChatState>((set, get) => ({
       ),
       isStreaming: false,
     })),
+
+  stopRun: () =>
+    set(state => {
+      const stoppedTools = Array.from(state.activeTools.values()).map(t => ({
+        ...t,
+        status: 'error' as const,
+        result: 'Stopped',
+      }))
+      return {
+        messages: state.messages.map(m =>
+          m.isStreaming
+            ? {
+                ...m,
+                isStreaming: false,
+                content: m.content ? `${m.content}
+
+_Stopped._` : '_Stopped._',
+                segments: [...m.segments, { type: 'text' as const, content: '_Stopped._' }],
+              }
+            : m
+        ),
+        activeTools: new Map(),
+        toolHistory: [...state.toolHistory, ...stoppedTools],
+        isStreaming: false,
+      }
+    }),
 
   setError: (error: string | null) => set({ error, isStreaming: false }),
 

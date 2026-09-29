@@ -25,8 +25,8 @@ import { findStaleBundles, recordLoadedBundles } from "./buildInfo";
 export class MessageBroker {
   private webview: vscode.Webview;
   private disposables: vscode.Disposable[] = [];
-  private isStreaming = false;
-  private abortController: AbortController | null = null;
+  /** The running agent request (null when idle); aborted by Stop */
+  private currentRun: AbortController | null = null;
   private context: vscode.ExtensionContext;
   private recentFiles: string[] = [];
   private maxRecentFiles = 10;
@@ -266,13 +266,18 @@ export class MessageBroker {
     activePlan?: unknown,
     planPath?: string,
   ): Promise<void> {
-    if (this.isStreaming) {
+    if (this.currentRun) {
       this.postMessage({ type: "error", message: "Already processing a task" });
       return;
     }
 
-    this.isStreaming = true;
-    this.abortController = new AbortController();
+    // Each run owns its controller. After Stop (or a new run) this run may still be winding down:
+    // nothing it produces reaches the webview any more, and its cleanup never touches a newer run.
+    const run = new AbortController();
+    this.currentRun = run;
+    const post = (message: ExtensionMessage) => {
+      if (this.currentRun === run) {this.postMessage(message);}
+    };
 
     try {
       const workspaceRoot = workspace || this.getWorkspaceRoot();
@@ -293,22 +298,21 @@ export class MessageBroker {
           ...(planPath ? { planPath } : {}),
           reviewEdits: reviewEditsEnabled(),
         },
-        this.abortController.signal,
+        run.signal,
       )) {
-        if (this.abortController.signal.aborted) {
-          this.postMessage({ type: "streamDone" });
+        if (run.signal.aborted) {
           break;
         }
 
         switch (event.type) {
           case "content":
             contentCharCount += event.content.length;
-            this.postMessage({ type: "token", content: event.content });
+            post({ type: "token", content: event.content });
             break;
 
           case "toolStart":
             hasToolCalls = true;
-            this.postMessage({
+            post({
               type: "toolStart",
               tool: event.event.tool,
               toolCallId: event.event.toolCallId,
@@ -317,7 +321,7 @@ export class MessageBroker {
             break;
 
           case "toolResult":
-            this.postMessage({
+            post({
               type: "toolResult",
               tool: event.event.tool,
               toolCallId: event.event.toolCallId,
@@ -329,43 +333,44 @@ export class MessageBroker {
             break;
 
           case "change":
+            // Even after Stop: the edit is on disk, so it must reach the review (Keep / Undo)
             this.postMessage({ type: "changeEvent", change: event.change });
             break;
 
           case "approval":
-            this.postMessage({ type: "approvalEvent", approval: event.approval });
+            post({ type: "approvalEvent", approval: event.approval });
             break;
 
           case "plan":
-            this.postMessage({ type: "planEvent", plan: event.plan });
+            post({ type: "planEvent", plan: event.plan });
             break;
 
           case "questions":
-            this.postMessage({ type: "questionsEvent", questions: event.questions });
+            post({ type: "questionsEvent", questions: event.questions });
             break;
 
           case "limit":
-            this.postMessage({ type: "limitEvent", limit: event.limit });
+            post({ type: "limitEvent", limit: event.limit });
             break;
 
           case "metrics":
-            this.postMessage({ type: "metrics", metrics: event.metrics });
+            post({ type: "metrics", metrics: event.metrics });
             break;
 
           case "error":
-            this.postMessage({ type: "error", message: event.message });
+            post({ type: "error", message: event.message });
             break;
 
           case "done":
             console.log("[MessageBroker] Stream complete");
-            this.postMessage({ type: "streamDone" });
+            post({ type: "streamDone" });
             break;
 
           case "diagnostic":
             console.log(
               `[MessageBroker] Diagnostic [${event.stage}]: ${event.detail}`,
             );
-            this.postMessage({
+            post({
               type: "diagnostic",
               stage: event.stage,
               detail: event.detail,
@@ -381,26 +386,30 @@ export class MessageBroker {
         errMsg.includes("network") ||
         errMsg.includes("ETIMEDOUT");
 
-      this.postMessage({
+      post({
         type: "error",
         message: isConnectionError
           ? `Cannot reach backend server. Check that it is running and the URL is correct.`
           : errMsg,
       });
 
-      this.postMessage({ type: "streamDone" });
+      post({ type: "streamDone" });
     } finally {
-      this.isStreaming = false;
-      this.abortController = null;
+      if (this.currentRun === run) {
+        this.currentRun = null;
+      }
     }
   }
 
+  /**
+   * Stop: aborting the request closes the connection, which stops the backend (model call, approval wait,
+   * running command). The webview has already ended the run on its side; the next message may start at once.
+   */
   private handleCancelTask(): void {
-    if (this.abortController) {
-      this.abortController.abort();
-    }
-    this.isStreaming = false;
+    this.currentRun?.abort();
+    this.currentRun = null;
   }
+
 
   private async handleHealthCheck(): Promise<void> {
     // Rebuilt while this window kept running old code? Tell the user to reload.

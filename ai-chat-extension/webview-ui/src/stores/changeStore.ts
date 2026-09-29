@@ -84,6 +84,8 @@ interface ChangeState {
   /** A command card's tool finished: record success/failure and its output */
   finishCommand: (toolCallId: string, ok: boolean, output: string) => boolean;
   selectChange: (id: string | null) => void;
+  /** The run was stopped: cards still waiting (or running) never got an outcome */
+  expireOpen: () => void;
   clearChanges: () => void;
   getAwaitingChanges: () => FileChange[];
   hydrateChanges: (changes: FileChange[]) => void;
@@ -179,6 +181,15 @@ export const useChangeStore = create<ChangeState>((set, get) => ({
   },
 
   selectChange: (id: string | null) => set({ selectedChangeId: id }),
+
+  expireOpen: () =>
+    set((state) => ({
+      changes: state.changes.map((c) =>
+        c.status === "awaiting" || c.status === "accepted" || c.status === "running"
+          ? { ...c, status: "expired" as const }
+          : c,
+      ),
+    })),
 
   clearChanges: () => set({ changes: [], selectedChangeId: null }),
 

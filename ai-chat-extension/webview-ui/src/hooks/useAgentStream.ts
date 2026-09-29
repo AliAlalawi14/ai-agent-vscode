@@ -271,7 +271,8 @@ export function useAgentStream() {
 
   const handleMessage = useCallback(
     (message: any) => {
-      if (abortRef.current) return;
+      // After Stop only file changes still count: they are on disk and belong in the review
+      if (abortRef.current && message.type !== "changeEvent") return;
 
       // Any stream activity resets the stall timer
       if (
@@ -582,9 +583,15 @@ export function useAgentStream() {
     ],
   );
 
+  /**
+   * Stop: end the run here right away. Late messages from the stopped run are ignored (abortRef) until the
+   * next run starts; the extension aborts the request, which stops the backend.
+   */
   const abort = useCallback(() => {
     abortRef.current = true;
     suppressingRef.current = false;
+    useChatStore.getState().stopRun();
+    useChangeStore.getState().expireOpen();
   }, []);
 
   return { runTask, handleMessage, abort };
