@@ -18,12 +18,16 @@ builder.Services.Configure<AgentOptions>(
     builder.Configuration.GetSection(AgentOptions.SectionName));
 builder.Services.Configure<AnthropicOptions>(
     builder.Configuration.GetSection(AnthropicOptions.SectionName));
-builder.Services.Configure<OpenAICompatibleOptions>(
-    builder.Configuration.GetSection(OpenAICompatibleOptions.SectionName));
 
 // ── LLM PROVIDERS: each one only when configured; the agent talks to the router ──
 var deepSeekConfigured = !string.IsNullOrWhiteSpace(builder.Configuration[$"{LLMOptions.SectionName}:ApiKey"]);
-var openAIConfigured = builder.Configuration.GetSection(OpenAICompatibleOptions.SectionName).Get<OpenAICompatibleOptions>()?.IsConfigured == true;
+// Any number of OpenAI-compatible providers (Providers:Custom:N), plus the older single "OpenAI" section
+var customProviders = (builder.Configuration.GetSection(CustomProviderOptions.SectionName).Get<List<CustomProviderOptions>>() ?? new())
+    .Where(p => p.IsConfigured)
+    .ToList();
+if (builder.Configuration.GetSection(OpenAICompatibleOptions.SectionName).Get<OpenAICompatibleOptions>() is { IsConfigured: true } legacyOpenAI)
+    customProviders.Add(legacyOpenAI.ToCustomProvider());
+customProviders = customProviders.GroupBy(p => p.Name, StringComparer.OrdinalIgnoreCase).Select(g => g.First()).ToList();
 var claudeConfigured = (builder.Configuration.GetSection(AnthropicOptions.SectionName).Get<AnthropicOptions>() ?? new()).IsConfigured;
 
 builder.Services.AddHttpClient<DeepSeekClient>((sp, client) =>
@@ -35,15 +39,16 @@ builder.Services.AddHttpClient<DeepSeekClient>((sp, client) =>
 })
 .AddHttpMessageHandler<TransientRetryHandler>();   // 429/5xx/network errors: retry with backoff
 
-builder.Services.AddHttpClient<OpenAICompatibleClient>((sp, client) =>
+foreach (var provider in customProviders)
 {
-    var options = sp.GetRequiredService<IOptions<OpenAICompatibleOptions>>().Value;
-    client.BaseAddress = new Uri(options.BaseUrl);
-    if (!string.IsNullOrWhiteSpace(options.ApiKey))   // a local Ollama needs none
-        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {options.ApiKey}");
-    client.Timeout = TimeSpan.FromMinutes(5);          // local models can be slow
-})
-.AddHttpMessageHandler<TransientRetryHandler>();
+    // One named HttpClient per provider; its auth header is added per request by OpenAICompatibleClient
+    builder.Services.AddHttpClient($"provider:{provider.Name}", client =>
+    {
+        client.BaseAddress = provider.BaseAddress;
+        client.Timeout = TimeSpan.FromMinutes(5);   // local models can be slow
+    })
+    .AddHttpMessageHandler<TransientRetryHandler>();
+}
 
 builder.Services.AddSingleton<ClaudeClient>();
 
@@ -52,33 +57,46 @@ builder.Services.AddSingleton(sp =>
     var registry = new LLMProviderRegistry(sp.GetRequiredService<ILogger<LLMProviderRegistry>>());
     if (deepSeekConfigured) registry.RegisterProvider(sp.GetRequiredService<DeepSeekClient>());
     if (claudeConfigured) registry.RegisterProvider(sp.GetRequiredService<ClaudeClient>());
-    if (openAIConfigured) registry.RegisterProvider(sp.GetRequiredService<OpenAICompatibleClient>());
+    foreach (var provider in customProviders)
+        registry.RegisterProvider(new OpenAICompatibleClient(
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient($"provider:{provider.Name}"),
+            provider.ToSettings(),
+            sp.GetRequiredService<ILoggerFactory>().CreateLogger($"LLM.{provider.Name}")));
     return registry;
 });
-// LLM:DefaultProvider = deepseek | anthropic | <OpenAI:ProviderName>; the first configured one otherwise
+// LLM:DefaultProvider = deepseek | anthropic | <a custom provider's Name>; the first configured one otherwise
 builder.Services.AddSingleton<ILLMClient>(sp =>
     new RoutingLLMClient(sp.GetRequiredService<LLMProviderRegistry>(), builder.Configuration["LLM:DefaultProvider"]));
 
 // ── ChromaDB Client (via IHttpClientFactory + retry) ──────────────────────
-builder.Services.AddHttpClient<ChromaDbService>(client =>
+builder.Services.AddHttpClient<ChromaDbService>((sp, client) =>
 {
-    client.BaseAddress = new Uri("http://localhost:8000");
+    client.BaseAddress = new Uri(sp.GetRequiredService<IOptions<AgentOptions>>().Value.ChromaUrl);
     client.Timeout = TimeSpan.FromSeconds(60);
 })
 .AddHttpMessageHandler<TransientRetryHandler>();
 
 // ── INFRASTRUCTURE SERVICES ─────────────────────────────────────────────
 builder.Services.AddTransient<TransientRetryHandler>();
-builder.Services.AddSingleton(_ => new OllamaEmbeddingService());
+builder.Services.AddSingleton(sp => new OllamaEmbeddingService(sp.GetRequiredService<IOptions<AgentOptions>>().Value.OllamaUrl));
 builder.Services.AddSingleton<UnifiedDiffService>();
 builder.Services.AddSingleton<ChangeTracker>();
 
 // ── TOOL FACTORY ───────────────────────────────────────────────────────
 builder.Services.AddSingleton<ToolFactory>();
 
-// ── DATABASE ────────────────────────────────────────────────────────────
+// ── DATABASE (conversation memory) ──────────────────────────────────────
+// SQLite by default: a single file, nothing to install. Database:Provider=postgres uses ConnectionStrings:DefaultConnection.
+var dbProvider = (builder.Configuration["Database:Provider"] ?? "sqlite").Trim().ToLowerInvariant();
+var sqlitePath = builder.Configuration["Database:SqlitePath"]
+                 ?? Path.Combine(builder.Environment.ContentRootPath, "data", "agent.db");
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (dbProvider == "postgres")
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    else
+        options.UseSqlite($"Data Source={sqlitePath}");
+});
 builder.Services.AddSingleton<ConversationMemoryService>();
 
 // ── AGENT SERVICES ─────────────────────────────────────────────────────
@@ -133,10 +151,10 @@ var startupLog = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger(
 {
     var llm = app.Services.GetRequiredService<IOptions<LLMOptions>>().Value;
     var agentConfig = app.Services.GetRequiredService<IOptions<AgentOptions>>().Value;
-    if (!deepSeekConfigured && !claudeConfigured && !openAIConfigured)
+    if (!deepSeekConfigured && !claudeConfigured && customProviders.Count == 0)
         throw new InvalidOperationException(
             "No LLM provider is configured. Set one of: dotnet user-secrets set \"DeepSeek:ApiKey\" <key> | " +
-            "\"Anthropic:ApiKey\" <key> (or ANTHROPIC_API_KEY) | OpenAI:BaseUrl + OpenAI:Models (OpenAI, OpenRouter, Groq, Ollama).");
+            "\"Anthropic:ApiKey\" <key> (or ANTHROPIC_API_KEY) | any OpenAI-compatible provider: Providers:Custom:0:Name/BaseUrl/Models (Gemini, Mistral, OpenRouter, Ollama...). In VS Code: AI Agent: Add Provider.");
     if (deepSeekConfigured && !Uri.TryCreate(llm.BaseUrl, UriKind.Absolute, out _))
         throw new InvalidOperationException($"DeepSeek:BaseUrl '{llm.BaseUrl}' is not a valid URL.");
     var router = app.Services.GetRequiredService<ILLMClient>();
@@ -184,14 +202,35 @@ app.Use(async (ctx, next) =>
     await next();
 });
 
-// Migrations run at startup in development; set Database:MigrateOnStartup=false where they run as a deploy step
+// Database setup at startup (Database:MigrateOnStartup=false where it runs as a deploy step).
+// Memory is optional: if the database can't be reached, the agent runs without it instead of not starting.
 if (builder.Configuration.GetValue("Database:MigrateOnStartup", true))
-using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    // MigrateAsync (not EnsureCreated): EnsureCreated skips everything when the database
-    // already exists, so tables from Migrations/ were never created.
-    await context.Database.MigrateAsync();
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        if (dbProvider == "postgres")
+        {
+            // Postgres keeps its migrations (Migrations/ is Npgsql-specific)
+            await context.Database.MigrateAsync();
+        }
+        else
+        {
+            // SQLite: one table, created from the model
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(sqlitePath))!);
+            await context.Database.EnsureCreatedAsync();
+        }
+        startupLog.LogInformation("Conversation memory: {Provider}{Where}", dbProvider,
+            dbProvider == "postgres" ? "" : $" ({sqlitePath})");
+    }
+    catch (Exception ex)
+    {
+        // Read at request time by PromptBuilder/AgentService, so turning it off here takes effect everywhere
+        app.Services.GetRequiredService<IOptions<AgentOptions>>().Value.MemoryEnabled = false;
+        startupLog.LogWarning("Conversation memory disabled: the {Provider} database is unavailable ({Message})",
+            dbProvider, ex.GetBaseException().Message);
+    }
 }
 
 app.MapControllers();

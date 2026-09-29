@@ -20,7 +20,7 @@ namespace Ai_Agent.LLM
                        ?? registry.GetDefaultProvider()
                        ?? throw new InvalidOperationException(
                            "No LLM provider is configured. Set DeepSeek:ApiKey, Anthropic:ApiKey (or ANTHROPIC_API_KEY), " +
-                           "or OpenAI:BaseUrl + OpenAI:Models.");
+                           "or an OpenAI-compatible provider (Providers:Custom:N; in VS Code: AI Agent: Add Provider).");
         }
 
         public string ProviderName => "router";

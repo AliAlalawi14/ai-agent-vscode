@@ -1,6 +1,5 @@
 using Ai_Agent.Config;
 using Ai_Agent.Models;
-using Microsoft.Extensions.Options;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -16,7 +15,11 @@ namespace Ai_Agent.LLM
         int MaxTokens,
         bool UseMaxCompletionTokens,
         string ChatPath = "/v1/chat/completions",
-        string HealthPath = "/v1/models");
+        string HealthPath = "/v1/models",
+        // Per-request auth: "bearer" (Authorization: Bearer), "api-key" (Azure OpenAI), or "none" (local servers;
+        // also when the HttpClient already carries the header, as DeepSeek's does)
+        string? ApiKey = null,
+        string AuthStyle = "none");
 
     /// <summary>
     /// Chat completions in the OpenAI wire format: DeepSeek, OpenAI, OpenRouter, Groq, a local Ollama...
@@ -37,13 +40,7 @@ namespace Ai_Agent.LLM
             WriteIndented = false
         };
 
-        /// <summary>DI constructor for the configurable "OpenAI" provider (OpenAI, OpenRouter, Groq, Ollama...).</summary>
-        public OpenAICompatibleClient(HttpClient httpClient, IOptions<OpenAICompatibleOptions> options, ILogger<OpenAICompatibleClient> logger)
-            : this(httpClient, options.Value.ToSettings(), logger)
-        {
-        }
-
-        protected OpenAICompatibleClient(HttpClient httpClient, OpenAIProviderSettings settings, ILogger logger)
+        public OpenAICompatibleClient(HttpClient httpClient, OpenAIProviderSettings settings, ILogger logger)
         {
             _httpClient = httpClient;
             _settings = settings;
@@ -55,6 +52,20 @@ namespace Ai_Agent.LLM
 
         public Task<List<ModelInfo>> GetAvailableModelsAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(_settings.Models.ToList());
+
+        /// <summary>A request to the provider, with its auth header (Bearer, api-key, or none).</summary>
+        private HttpRequestMessage NewHttp(HttpMethod method, string path, HttpContent? content = null)
+        {
+            var request = new HttpRequestMessage(method, path) { Content = content };
+            if (!string.IsNullOrWhiteSpace(_settings.ApiKey))
+            {
+                if (_settings.AuthStyle == "api-key")
+                    request.Headers.Add("api-key", _settings.ApiKey);
+                else if (_settings.AuthStyle == "bearer")
+                    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _settings.ApiKey);
+            }
+            return request;
+        }
 
         private DeepSeekRequest NewRequest(List<ChatMessage> messages, List<ToolDefinition>? tools, string? model, bool stream) => new()
         {
@@ -83,8 +94,9 @@ namespace Ai_Agent.LLM
 
             try
             {
-                var response = await _httpClient.PostAsync(_settings.ChatPath,
-                    new StringContent(jsonContent, Encoding.UTF8, "application/json"), cancellationToken);
+                using var httpRequest = NewHttp(HttpMethod.Post, _settings.ChatPath,
+                    new StringContent(jsonContent, Encoding.UTF8, "application/json"));
+                var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
                 var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
                 if (!response.IsSuccessStatusCode)
@@ -130,10 +142,7 @@ namespace Ai_Agent.LLM
                 "[TRACE] LLM_STREAM | Provider={Provider} | Model={Model} | MsgCount={MsgCount} | ToolCount={ToolCount} | BodyLen={BodyLen}",
                 ProviderName, request.Model, request.Messages.Count, tools?.Count ?? 0, json.Length);
 
-            var httpRequest = new HttpRequestMessage(HttpMethod.Post, _settings.ChatPath)
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            };
+            var httpRequest = NewHttp(HttpMethod.Post, _settings.ChatPath, new StringContent(json, Encoding.UTF8, "application/json"));
             var response = await _httpClient.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
@@ -215,7 +224,8 @@ namespace Ai_Agent.LLM
             try
             {
                 // Lists models: checks reachability and the API key without spending tokens
-                using var response = await _httpClient.GetAsync(_settings.HealthPath, cancellationToken);
+                using var request = NewHttp(HttpMethod.Get, _settings.HealthPath);
+                using var response = await _httpClient.SendAsync(request, cancellationToken);
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)

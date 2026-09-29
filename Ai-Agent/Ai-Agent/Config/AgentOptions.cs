@@ -60,6 +60,10 @@
             "git status", "git diff", "git log", "git branch", "git --version"
         };
 
+        // Optional services for semantic_search (the tool is simply not offered when they don't answer)
+        public string ChromaUrl { get; set; } = "http://localhost:8000";
+        public string OllamaUrl { get; set; } = LLM.OllamaEmbeddingService.DefaultBaseUrl;
+
         // Semantic index: at most this many code files per workspace
         public int MaxIndexedFiles { get; set; } = 2000;
 

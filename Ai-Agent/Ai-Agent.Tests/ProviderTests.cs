@@ -147,14 +147,16 @@ namespace Ai_Agent.Tests
                 "data: {\"choices\":[],\"usage\":{\"prompt_tokens\":1000,\"completion_tokens\":50,\"prompt_tokens_details\":{\"cached_tokens\":800}}}\n\n" +
                 "data: [DONE]\n\n";
             var handler = new SseHandler(sse);
+            // The older single "OpenAI" section still works: it becomes one provider of the list
+            var provider = new OpenAICompatibleOptions
+            {
+                BaseUrl = "http://llm.test",
+                UseMaxCompletionTokens = true,
+                Models = new() { new OpenAIModelOptions { Id = "gpt-test" } }
+            }.ToCustomProvider();
             var client = new OpenAICompatibleClient(
-                new HttpClient(handler) { BaseAddress = new Uri("http://llm.test") },
-                Options.Create(new OpenAICompatibleOptions
-                {
-                    BaseUrl = "http://llm.test",
-                    UseMaxCompletionTokens = true,
-                    Models = new() { new OpenAIModelOptions { Id = "gpt-test" } }
-                }),
+                new HttpClient(handler) { BaseAddress = provider.BaseAddress },
+                provider.ToSettings(),
                 NullLogger<OpenAICompatibleClient>.Instance);
 
             var chunks = new List<LLMStreamChunk>();

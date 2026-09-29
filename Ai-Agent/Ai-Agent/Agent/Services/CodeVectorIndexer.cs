@@ -65,6 +65,21 @@ namespace Ai_Agent.Agent.Services
             await gate.WaitAsync();
             try
             {
+                // Chroma and Ollama are optional: a quick probe, so a machine without them gets one calm log line
+                // instead of retries and a stack trace on every start
+                using (var probe = new CancellationTokenSource(TimeSpan.FromSeconds(3)))
+                {
+                    if (!await _chromaDbService.HeartbeatAsync(probe.Token) || !await _embeddingService.PingAsync(probe.Token))
+                    {
+                        _ready[key] = false;
+                        _logger.LogInformation(
+                            "Semantic search is off for {Workspace}: Chroma ({Chroma}) or Ollama ({Ollama}) isn't running. " +
+                            "It's optional; the other search tools work without it.",
+                            key, _options.Value.ChromaUrl, _options.Value.OllamaUrl);
+                        return new IndexStats { Error = "Chroma or Ollama is not reachable" };
+                    }
+                }
+
                 await _chromaDbService.InitializeAsync();
 
                 var max = maxFiles ?? _options.Value.MaxIndexedFiles;

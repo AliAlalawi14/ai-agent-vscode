@@ -8,8 +8,9 @@
         public const string SectionName = "DeepSeek";
 
         public string ApiKey { get; set; } = string.Empty;
-        public string BaseUrl { get; set; } = string.Empty;
-        public string Model { get; set; } = string.Empty;
+        // Defaults so a key alone is enough (the extension only passes DeepSeek__ApiKey; no appsettings file ships)
+        public string BaseUrl { get; set; } = "https://api.deepseek.com";
+        public string Model { get; set; } = "deepseek-chat";
 
         // Optional price overrides, USD per 1K tokens, keyed by model id (e.g. "DeepSeek:Pricing:deepseek-chat:Input").
         // Unset models use CostTracker's built-in list prices; check your provider's current prices.

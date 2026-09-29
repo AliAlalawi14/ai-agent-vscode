@@ -64,7 +64,13 @@ namespace Ai_Agent.Agent.Services
             // Order matters for the provider's prompt cache, which only reuses the unchanged START of the prompt:
             // shared rules and project context first, then the mode (differs per chat), memories last (change every run).
             prompt.AppendLine(BuildModeSection(mode));
-            var memories = _memoryEnabled ? await _memoryService.GetRecentAsync(5, ws) : new List<ConversationMemory>();
+            var memories = new List<ConversationMemory>();
+            if (_memoryEnabled)
+            {
+                // Memory is a nice-to-have: a database hiccup must never block an answer
+                try { memories = await _memoryService.GetRecentAsync(5, ws); }
+                catch (Exception ex) when (ex is not OperationCanceledException) { }
+            }
             if (memories.Count > 0)
             {
                 prompt.AppendLine();

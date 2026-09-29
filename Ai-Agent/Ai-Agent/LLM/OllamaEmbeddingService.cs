@@ -10,18 +10,22 @@ namespace Ai_Agent.LLM
     public class OllamaEmbeddingService
     {
         private readonly HttpClient _httpClient;
-        private const string OllamaUrl = "http://localhost:11434/api/embeddings";
-        private const string OllamaBatchUrl = "http://localhost:11434/api/embed";
+        public const string DefaultBaseUrl = "http://localhost:11434";
+        private readonly string _baseUrl;
+        private string OllamaUrl => $"{_baseUrl}/api/embeddings";
+        private string OllamaBatchUrl => $"{_baseUrl}/api/embed";
         private const string ModelName = "nomic-embed-text";
 
-        public OllamaEmbeddingService() : this(new HttpClient { Timeout = TimeSpan.FromSeconds(30) })
+        public OllamaEmbeddingService(string baseUrl = DefaultBaseUrl)
+            : this(new HttpClient { Timeout = TimeSpan.FromSeconds(30) }, baseUrl)
         {
         }
 
         /// <summary>For tests: a client whose handler stands in for Ollama.</summary>
-        public OllamaEmbeddingService(HttpClient httpClient)
+        public OllamaEmbeddingService(HttpClient httpClient, string baseUrl = DefaultBaseUrl)
         {
             _httpClient = httpClient;
+            _baseUrl = baseUrl.TrimEnd('/');
         }
 
         /// <summary>
@@ -31,7 +35,7 @@ namespace Ai_Agent.LLM
         {
             try
             {
-                using var response = await _httpClient.GetAsync("http://localhost:11434/api/tags", cancellationToken);
+                using var response = await _httpClient.GetAsync($"{_baseUrl}/api/tags", cancellationToken);
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
