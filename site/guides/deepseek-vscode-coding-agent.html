@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to Use DeepSeek as a Coding Agent in VS Code | Stoat</title>
+<meta name="description" content="Step-by-step: use DeepSeek as an AI coding agent in VS Code with your own API key. Free, open-source extension; the agent edits your code and you keep or undo every change.">
+<link rel="canonical" href="https://alialalawi14.github.io/stoat/guides/deepseek-vscode-coding-agent.html">
+<link rel="icon" type="image/png" href="../logo.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Stoat">
+<meta property="og:title" content="How to Use DeepSeek as a Coding Agent in VS Code">
+<meta property="og:description" content="Step-by-step: use DeepSeek as an AI coding agent in VS Code with your own API key. Free, open-source extension; the agent edits your code and you keep or undo every change.">
+<meta property="og:url" content="https://alialalawi14.github.io/stoat/guides/deepseek-vscode-coding-agent.html">
+<meta property="og:image" content="https://alialalawi14.github.io/stoat/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../styles.css">
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "TechArticle", "headline": "How to Use DeepSeek as a Coding Agent in VS Code", "description": "Step-by-step: use DeepSeek as an AI coding agent in VS Code with your own API key. Free, open-source extension; the agent edits your code and you keep or undo every change.", "url": "https://alialalawi14.github.io/stoat/guides/deepseek-vscode-coding-agent.html", "image": "https://alialalawi14.github.io/stoat/og.png", "author": {"@type": "Organization", "name": "Stoat"}, "about": {"@type": "SoftwareApplication", "name": "Stoat", "applicationCategory": "DeveloperApplication"}}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is DeepSeek good for coding agents?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. DeepSeek's chat model supports tool calling, which an agent needs to read files, search and edit, and it is inexpensive per request."}}, {"@type": "Question", "name": "Does Stoat cost anything?", "acceptedAnswer": {"@type": "Answer", "text": "No. Stoat is free and open source. You pay DeepSeek directly for the tokens you use."}}]}]</script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+<a class="brand" href="../"><img src="../logo.png" alt="" width="30" height="30">Stoat</a>
+<nav><a href="../#guides">Guides</a><a href="../#faq" class="hide-sm">FAQ</a><a href="https://github.com/AliAlalawi14/stoat">GitHub</a></nav>
+</div></header>
+<main class="article">
+<p class="crumbs"><a href="../">Stoat</a> › <a href="../#guides">Guides</a></p>
+<h1>How to use DeepSeek as a coding agent in VS Code</h1>
+<p>DeepSeek&#x27;s models are strong at code and cost very little per request, which makes them a good fit for an agent that reads and edits many files. With Stoat you use your own DeepSeek key directly from VS Code: no subscription, no middleman.</p>
+
+<h2>1. Install Stoat</h2><ol>
+<li><strong>Install Stoat.</strong> In VS Code open Extensions (<kbd>Ctrl+Shift+X</kbd>), search <em>Stoat</em> and install
+<em>Stoat – AI Coding Agent</em>. (Cursor, Windsurf and VSCodium find it on Open VSX the same way.)</li>
+<li><strong>Open your project folder</strong> and click the Stoat icon in the activity bar (or press <kbd>Ctrl+Shift+L</kbd>).</li>
+</ol>
+<h2>2. Get a DeepSeek API key</h2>
+<ol>
+<li>Sign in at <a href="https://platform.deepseek.com/api_keys">platform.deepseek.com</a> and create an API key.</li>
+<li>Add a little credit to your account (the API is pay-as-you-go).</li>
+</ol>
+<h2>3. Connect it in Stoat</h2>
+<ol>
+<li>The first time you open Stoat it shows <strong>Connect a model</strong>. Pick <strong>DeepSeek</strong>.</li>
+<li>Paste the key and click <strong>Save &amp; connect</strong>. The status dot turns green.</li>
+<li>Choose a DeepSeek model in the model menu at the top of the panel.</li>
+</ol>
+<p class="note"><strong>Your key stays on your machine</strong>, in VS Code's secret storage, never in a settings file. Requests go straight from your computer to DeepSeek.</p>
+<h2>4. Give it a task</h2>
+<p>Switch to <strong>Agent</strong> mode (<kbd>Shift+Tab</kbd>) and describe what you want, for example:</p>
+<pre><code>Add input validation to the signup form and show an error under each invalid field.</code></pre>
+<h2>5. Review the changes</h2><p>When the agent finishes, a review bar lists every file it changed. Click a file to see the diff, then
+<strong>Keep</strong> or <strong>Undo</strong> it (or <strong>Keep all</strong> / <strong>Undo all</strong>). Commands such as
+<code>npm test</code> or <code>dotnet build</code> always wait for your approval first.</p>
+<h2>Tips</h2>
+<ul>
+<li>Turn on <em>Settings → Show Metrics</em> to see tokens and the cost of every reply.</li>
+<li>Use <strong>Plan</strong> mode for bigger features: it asks questions first and writes a plan you can edit before anything changes.</li>
+<li>You can add more providers later and switch model per message.</li>
+</ul>
+<h2>FAQ</h2>
+<details><summary>Is DeepSeek good for coding agents?</summary><p>Yes. DeepSeek&#x27;s chat model supports tool calling, which an agent needs to read files, search and edit, and it is inexpensive per request.</p></details>
+<details><summary>Does Stoat cost anything?</summary><p>No. Stoat is free and open source. You pay DeepSeek directly for the tokens you use.</p></details>
+<div class="cta">
+<p><strong>Stoat is free and open source.</strong> Small agent, takes on the big ones.</p>
+<div class="buttons">
+<a class="btn primary" href="https://marketplace.visualstudio.com/items?itemName=AliAlalawi14.stoat">Install for VS Code</a>
+<a class="btn" href="https://open-vsx.org/extension/AliAlalawi14/stoat">Open VSX</a>
+<a class="btn" href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+</div></div>
+<p class="small">More guides: <a href="ollama-local-coding-agent-vscode.html">Run a free, local AI coding agent in VS Code with Ollama</a> · <a href="claude-api-key-vscode-agent.html">Use your Claude API key in VS Code as a coding agent</a> · <a href="gemini-groq-openrouter-vscode.html">Use Gemini, Groq or OpenRouter as a coding agent in VS Code</a> · <a href="open-source-cursor-alternative-vscode.html">An open-source Cursor alternative for VS Code</a></p>
+</main>
+<footer><div class="wrap">
+<span>Stoat · MIT license</span>
+<a href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+<a href="https://github.com/AliAlalawi14/stoat/issues">Report a bug</a>
+<a href="https://github.com/AliAlalawi14/stoat/blob/main/SECURITY.md">Security</a>
+</div></footer>
+</body>
+</html>

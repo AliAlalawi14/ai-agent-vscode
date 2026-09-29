@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stoat – Open-Source AI Coding Agent for VS Code (Bring Your Own Model)</title>
+<meta name="description" content="Stoat is a free, open-source AI coding agent for VS Code. Use Claude, GPT, Gemini, DeepSeek or a local Ollama model with your own key, and Keep or Undo every change. An open-source alternative to Cursor.">
+<link rel="canonical" href="https://alialalawi14.github.io/stoat/">
+<link rel="icon" type="image/png" href="logo.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Stoat">
+<meta property="og:title" content="Stoat – Small agent. Takes on the big ones.">
+<meta property="og:description" content="Open-source AI coding agent for VS Code. Any model, your own key, every change yours to Keep or Undo.">
+<meta property="og:url" content="https://alialalawi14.github.io/stoat/">
+<meta property="og:image" content="https://alialalawi14.github.io/stoat/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="styles.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Stoat",
+  "alternateName": "Stoat – AI Coding Agent",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Windows, macOS, Linux",
+  "description": "Open-source AI coding agent for VS Code. Bring your own model (Claude, GPT, Gemini, DeepSeek, Ollama) and review every change.",
+  "url": "https://alialalawi14.github.io/stoat/",
+  "downloadUrl": "https://marketplace.visualstudio.com/items?itemName=AliAlalawi14.stoat",
+  "softwareHelp": "https://github.com/AliAlalawi14/stoat#readme",
+  "license": "https://opensource.org/licenses/MIT",
+  "image": "https://alialalawi14.github.io/stoat/logo.png",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Is Stoat free?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Stoat is free and open source (MIT). You pay only your model provider for what you use, or nothing with a local model through Ollama or LM Studio." } },
+    { "@type": "Question", "name": "Which AI models does Stoat support?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Anthropic Claude, OpenAI, Google Gemini, DeepSeek, Mistral, xAI Grok, Groq, OpenRouter, Together, Fireworks, Azure OpenAI, local models through Ollama or LM Studio, and any OpenAI-compatible API." } },
+    { "@type": "Question", "name": "Is Stoat an alternative to Cursor?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Stoat brings an agent workflow to regular VS Code: it edits files without stopping, then you Keep or Undo each change. Unlike a subscription editor, you choose the model and use your own key. It also installs in Cursor, Windsurf and VSCodium from Open VSX." } },
+    { "@type": "Question", "name": "Does my code leave my machine?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Only to the model provider you choose, directly from your machine. Stoat has no server and no telemetry. With a local model, nothing leaves your computer." } },
+    { "@type": "Question", "name": "Can I use my Claude Pro or Max subscription?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Anthropic allows subscription logins only in Claude.ai and Claude Code. Other tools, including Stoat, need an API key from console.anthropic.com or Claude through AWS Bedrock, Google Vertex or Microsoft Foundry." } }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="logo.png" alt="" width="30" height="30">Stoat</a>
+    <nav>
+      <a href="#features" class="hide-sm">Features</a>
+      <a href="#guides">Guides</a>
+      <a href="#faq" class="hide-sm">FAQ</a>
+      <a href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero wrap">
+    <img class="logo" src="logo.png" alt="Stoat logo: a white stoat on a navy background" width="120" height="120">
+    <h1>Small agent.<br>Takes on the big ones.</h1>
+    <p class="tag"><strong>Stoat is an open-source AI coding agent for VS Code.</strong> Use any model with your own key
+      (Claude, GPT, Gemini, DeepSeek, or a local model) and <strong>Keep or Undo every change</strong> it makes.</p>
+    <div class="buttons">
+      <a class="btn primary" href="https://marketplace.visualstudio.com/items?itemName=AliAlalawi14.stoat">Install for VS Code</a>
+      <a class="btn" href="https://open-vsx.org/extension/AliAlalawi14/stoat">Cursor · Windsurf · VSCodium</a>
+      <a class="btn" href="https://github.com/AliAlalawi14/stoat">Source on GitHub</a>
+    </div>
+    <p class="small">Free · MIT licensed · Windows, macOS, Linux · no account, no telemetry</p>
+  </div>
+
+  <section id="features">
+    <div class="wrap">
+      <h2>Why a stoat?</h2>
+      <p class="lead">A stoat weighs about 200 grams and hunts rabbits ten times its size. Stoat is a small, open project
+        built to compete with the big, closed coding tools: no subscription, no lock-in, and nothing changes in your code
+        without your say.</p>
+      <div class="grid">
+        <div class="card"><h3>🔑 Your key, your model</h3><p>Claude, GPT, Gemini, DeepSeek, Mistral, Grok, OpenRouter, Azure, or any OpenAI-compatible API. Pay the provider only for what you use.</p></div>
+        <div class="card"><h3>💻 Fully local if you want</h3><p>Run it with Ollama or LM Studio and your code never leaves your machine. No key, no cost.</p></div>
+        <div class="card"><h3>✅ Review, don't babysit</h3><p>The agent edits without stopping at every file. When it's done, Keep or Undo each change, each file, or everything.</p></div>
+        <div class="card"><h3>🗺️ Plan before building</h3><p>Plan mode asks clarifying questions, then writes an editable Markdown plan that Build follows step by step.</p></div>
+        <div class="card"><h3>🛡️ Safe by default</h3><p>Works only inside your open folder, commands wait for approval, secrets are redacted, every change can be undone.</p></div>
+        <div class="card"><h3>📦 Nothing to set up</h3><p>The engine ships inside the extension and starts by itself. No Python, no .NET, no Docker. Connect a model in the panel and go.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Every change is yours to keep</h2>
+      <p class="lead">When a run finishes, Stoat lists every file it touched. Open a side-by-side diff, keep what's good,
+        undo what isn't. Undo never overwrites lines you changed yourself.</p>
+      <div class="review" role="img" aria-label="Example of Stoat's review bar: three changed files with Keep and Undo buttons">
+        <div class="head"><b>3 files changed</b><span class="plus">+42</span><span class="minus">−7</span>
+          <span class="pill">↶ Undo all</span><span class="pill keep">✓ Keep all</span></div>
+        <div class="row"><span class="name">Program.cs<span class="dir">src</span></span><span class="plus">+30</span><span class="minus">−5</span><span class="pill">↶</span><span class="pill">✓</span></div>
+        <div class="row"><span class="name">UserService.cs<span class="dir">src/Services</span></span><span class="plus">+10</span><span class="minus">−2</span><span class="pill">↶</span><span class="pill">✓</span></div>
+        <div class="row"><span class="name">Helper.cs<span class="dir">new</span></span><span class="plus">+2</span><span class="minus">−0</span><span class="pill">↶</span><span class="pill">✓</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Four modes</h2>
+      <div class="scroll">
+        <table class="table">
+          <tr><th>Mode</th><th>What it does</th><th>Changes files?</th></tr>
+          <tr><td><b>Ask</b></td><td>Answers questions about your code.</td><td>Never</td></tr>
+          <tr><td><b>Plan</b></td><td>Investigates, asks what it needs to know, then writes a step-by-step plan you can edit.</td><td>Only its plan file</td></tr>
+          <tr><td><b>Agent</b></td><td>Edits files and runs build and test commands. Commands wait for your approval.</td><td>Yes, reviewed</td></tr>
+          <tr><td><b>Auto</b></td><td>Like Agent, but safe commands (build, test, <code>git status</code>) run without asking.</td><td>Yes, reviewed</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="guides">
+    <div class="wrap">
+      <h2>Guides</h2>
+      <p class="lead">Set up Stoat with the model you already use.</p>
+      <div class="grid">
+        <div class="card"><h3>DeepSeek in VS Code</h3><p>A capable coding agent for a few cents a day.</p><a class="more" href="guides/deepseek-vscode-coding-agent.html">Read the guide →</a></div>
+        <div class="card"><h3>Local agent with Ollama</h3><p>Free, private, offline. Your code never leaves your machine.</p><a class="more" href="guides/ollama-local-coding-agent-vscode.html">Read the guide →</a></div>
+        <div class="card"><h3>Claude API in VS Code</h3><p>Use your Anthropic key, and why a Pro subscription can't be used.</p><a class="more" href="guides/claude-api-key-vscode-agent.html">Read the guide →</a></div>
+        <div class="card"><h3>Gemini, Groq, OpenRouter</h3><p>Any OpenAI-compatible provider in two minutes.</p><a class="more" href="guides/gemini-groq-openrouter-vscode.html">Read the guide →</a></div>
+        <div class="card"><h3>An open-source Cursor alternative</h3><p>The agent workflow in the VS Code you already have.</p><a class="more" href="guides/open-source-cursor-alternative-vscode.html">Read the guide →</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <h2>FAQ</h2>
+      <details><summary>Is Stoat free?</summary><p>Yes. Stoat is free and open source (MIT). You pay only your model provider for what you use, or nothing with a local model through Ollama or LM Studio.</p></details>
+      <details><summary>Which AI models does Stoat support?</summary><p>Anthropic Claude, OpenAI, Google Gemini, DeepSeek, Mistral, xAI Grok, Groq, OpenRouter, Together, Fireworks, Azure OpenAI, local models through Ollama or LM Studio, and any OpenAI-compatible API. Agent and Plan modes need models that support tool calling.</p></details>
+      <details><summary>Is Stoat an alternative to Cursor?</summary><p>Stoat brings an agent workflow to regular VS Code: it edits files without stopping, then you Keep or Undo each change. Unlike a subscription editor, you choose the model and use your own key. It also installs in Cursor, Windsurf and VSCodium from Open VSX.</p></details>
+      <details><summary>Does my code leave my machine?</summary><p>Only to the model provider you choose, directly from your machine. Stoat has no server and no telemetry. With a local model, nothing leaves your computer.</p></details>
+      <details><summary>Can I use my Claude Pro or Max subscription?</summary><p>No. Anthropic allows subscription logins only in Claude.ai and Claude Code. Other tools, including Stoat, need an API key from console.anthropic.com or Claude through AWS Bedrock, Google Vertex or Microsoft Foundry.</p></details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Stoat · MIT license</span>
+    <a href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+    <a href="https://github.com/AliAlalawi14/stoat/issues">Report a bug</a>
+    <a href="https://github.com/AliAlalawi14/stoat/blob/main/SECURITY.md">Security</a>
+    <a href="https://github.com/AliAlalawi14/stoat/blob/main/CHANGELOG.md">Changelog</a>
+  </div>
+</footer>
+</body>
+</html>

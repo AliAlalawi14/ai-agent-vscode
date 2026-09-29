@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Use Gemini, Groq or OpenRouter as a Coding Agent in VS Code | Stoat</title>
+<meta name="description" content="Connect Google Gemini, Groq, OpenRouter, Mistral, xAI Grok or any OpenAI-compatible API to VS Code as an AI coding agent, with your own key, using the free Stoat extension.">
+<link rel="canonical" href="https://alialalawi14.github.io/stoat/guides/gemini-groq-openrouter-vscode.html">
+<link rel="icon" type="image/png" href="../logo.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Stoat">
+<meta property="og:title" content="Use Gemini, Groq or OpenRouter as a Coding Agent in VS Code">
+<meta property="og:description" content="Connect Google Gemini, Groq, OpenRouter, Mistral, xAI Grok or any OpenAI-compatible API to VS Code as an AI coding agent, with your own key, using the free Stoat extension.">
+<meta property="og:url" content="https://alialalawi14.github.io/stoat/guides/gemini-groq-openrouter-vscode.html">
+<meta property="og:image" content="https://alialalawi14.github.io/stoat/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../styles.css">
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Use Gemini, Groq or OpenRouter as a Coding Agent in VS Code", "description": "Connect Google Gemini, Groq, OpenRouter, Mistral, xAI Grok or any OpenAI-compatible API to VS Code as an AI coding agent, with your own key, using the free Stoat extension.", "url": "https://alialalawi14.github.io/stoat/guides/gemini-groq-openrouter-vscode.html", "image": "https://alialalawi14.github.io/stoat/og.png", "author": {"@type": "Organization", "name": "Stoat"}, "about": {"@type": "SoftwareApplication", "name": "Stoat", "applicationCategory": "DeveloperApplication"}}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does Stoat support Google Gemini?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, through Gemini's OpenAI-compatible endpoint. Paste a key from Google AI Studio and pick the models to offer."}}, {"@type": "Question", "name": "Can I use OpenRouter models in VS Code?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Add OpenRouter with one key and choose any of its models that support tool calling."}}]}]</script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+<a class="brand" href="../"><img src="../logo.png" alt="" width="30" height="30">Stoat</a>
+<nav><a href="../#guides">Guides</a><a href="../#faq" class="hide-sm">FAQ</a><a href="https://github.com/AliAlalawi14/stoat">GitHub</a></nav>
+</div></header>
+<main class="article">
+<p class="crumbs"><a href="../">Stoat</a> › <a href="../#guides">Guides</a></p>
+<h1>Use Gemini, Groq or OpenRouter as a coding agent in VS Code</h1>
+<p>Stoat works with any provider that speaks the OpenAI API: Google Gemini, Groq, OpenRouter, Mistral, xAI Grok, Together, Fireworks, Azure OpenAI, or your company&#x27;s own gateway. The model list is read live from the provider, so new models show up without an update.</p>
+
+<h2>1. Install Stoat</h2><ol>
+<li><strong>Install Stoat.</strong> In VS Code open Extensions (<kbd>Ctrl+Shift+X</kbd>), search <em>Stoat</em> and install
+<em>Stoat – AI Coding Agent</em>. (Cursor, Windsurf and VSCodium find it on Open VSX the same way.)</li>
+<li><strong>Open your project folder</strong> and click the Stoat icon in the activity bar (or press <kbd>Ctrl+Shift+L</kbd>).</li>
+</ol>
+<h2>2. Add the provider</h2>
+<ol>
+<li>In <strong>Connect a model</strong> (or <em>Settings → Add provider</em> later), pick your provider.</li>
+<li>Click <strong>Get a key</strong> to open the provider's key page, create a key and paste it:
+<ul>
+<li><strong>Gemini</strong>: <a href="https://aistudio.google.com/apikey">Google AI Studio</a></li>
+<li><strong>Groq</strong>: <a href="https://console.groq.com/keys">console.groq.com</a></li>
+<li><strong>OpenRouter</strong>: <a href="https://openrouter.ai/keys">openrouter.ai</a> (one key for hundreds of models)</li>
+</ul></li>
+<li>Click <strong>Load models</strong>, tick the ones you want, then <strong>Save &amp; connect</strong>.</li>
+</ol>
+<p class="note"><strong>Pick models that support tool calling.</strong> Agent and Plan modes use tools to read, search and edit files; models without tool calling can only answer questions.</p>
+<h2>3. Any other OpenAI-compatible server</h2>
+<p>Choose <strong>Custom server</strong> and enter the base URL including the version path (Stoat calls
+<code>&lt;base&gt;/chat/completions</code> and <code>&lt;base&gt;/models</code>), for example <code>https://my-gateway.example.com/v1</code>,
+and how it takes its key: a bearer token, an <code>api-key</code> header (Azure style), or none.</p>
+<h2>4. Mix providers</h2>
+<p>Add as many providers as you like and switch model per message from the menu at the top of the panel, for example a
+fast model for questions and a stronger one for big changes.</p>
+<p>When the agent finishes, a review bar lists every file it changed. Click a file to see the diff, then
+<strong>Keep</strong> or <strong>Undo</strong> it (or <strong>Keep all</strong> / <strong>Undo all</strong>). Commands such as
+<code>npm test</code> or <code>dotnet build</code> always wait for your approval first.</p>
+<h2>FAQ</h2>
+<details><summary>Does Stoat support Google Gemini?</summary><p>Yes, through Gemini&#x27;s OpenAI-compatible endpoint. Paste a key from Google AI Studio and pick the models to offer.</p></details>
+<details><summary>Can I use OpenRouter models in VS Code?</summary><p>Yes. Add OpenRouter with one key and choose any of its models that support tool calling.</p></details>
+<div class="cta">
+<p><strong>Stoat is free and open source.</strong> Small agent, takes on the big ones.</p>
+<div class="buttons">
+<a class="btn primary" href="https://marketplace.visualstudio.com/items?itemName=AliAlalawi14.stoat">Install for VS Code</a>
+<a class="btn" href="https://open-vsx.org/extension/AliAlalawi14/stoat">Open VSX</a>
+<a class="btn" href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+</div></div>
+<p class="small">More guides: <a href="deepseek-vscode-coding-agent.html">How to use DeepSeek as a coding agent in VS Code</a> · <a href="ollama-local-coding-agent-vscode.html">Run a free, local AI coding agent in VS Code with Ollama</a> · <a href="claude-api-key-vscode-agent.html">Use your Claude API key in VS Code as a coding agent</a> · <a href="open-source-cursor-alternative-vscode.html">An open-source Cursor alternative for VS Code</a></p>
+</main>
+<footer><div class="wrap">
+<span>Stoat · MIT license</span>
+<a href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+<a href="https://github.com/AliAlalawi14/stoat/issues">Report a bug</a>
+<a href="https://github.com/AliAlalawi14/stoat/blob/main/SECURITY.md">Security</a>
+</div></footer>
+</body>
+</html>

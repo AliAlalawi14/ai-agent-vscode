@@ -257,11 +257,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AliAlalawi14/ai-agent-vscode.git",
+    "url": "https://github.com/AliAlalawi14/stoat.git",
     "directory": "ai-chat-extension"
   },
-  "homepage": "https://github.com/AliAlalawi14/ai-agent-vscode#readme",
+  "homepage": "https://alialalawi14.github.io/stoat/",
   "bugs": {
-    "url": "https://github.com/AliAlalawi14/ai-agent-vscode/issues"
+    "url": "https://github.com/AliAlalawi14/stoat/issues"
   }
 }

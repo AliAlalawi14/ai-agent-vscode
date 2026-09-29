@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Use Your Claude API Key in VS Code as a Coding Agent | Stoat</title>
+<meta name="description" content="Use Anthropic Claude as a coding agent in VS Code with your own API key, via the free, open-source Stoat extension. Also explains why a Claude Pro or Max subscription can&#x27;t be used in third-party tools.">
+<link rel="canonical" href="https://alialalawi14.github.io/stoat/guides/claude-api-key-vscode-agent.html">
+<link rel="icon" type="image/png" href="../logo.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Stoat">
+<meta property="og:title" content="Use Your Claude API Key in VS Code as a Coding Agent">
+<meta property="og:description" content="Use Anthropic Claude as a coding agent in VS Code with your own API key, via the free, open-source Stoat extension. Also explains why a Claude Pro or Max subscription can&#x27;t be used in third-party tools.">
+<meta property="og:url" content="https://alialalawi14.github.io/stoat/guides/claude-api-key-vscode-agent.html">
+<meta property="og:image" content="https://alialalawi14.github.io/stoat/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../styles.css">
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Use Your Claude API Key in VS Code as a Coding Agent", "description": "Use Anthropic Claude as a coding agent in VS Code with your own API key, via the free, open-source Stoat extension. Also explains why a Claude Pro or Max subscription can't be used in third-party tools.", "url": "https://alialalawi14.github.io/stoat/guides/claude-api-key-vscode-agent.html", "image": "https://alialalawi14.github.io/stoat/og.png", "author": {"@type": "Organization", "name": "Stoat"}, "about": {"@type": "SoftwareApplication", "name": "Stoat", "applicationCategory": "DeveloperApplication"}}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can I use my Claude Pro subscription in VS Code extensions?", "acceptedAnswer": {"@type": "Answer", "text": "No. Anthropic allows subscription logins only in Claude.ai and Claude Code. Third-party tools like Stoat need an API key from console.anthropic.com."}}, {"@type": "Question", "name": "Where is my Anthropic key stored?", "acceptedAnswer": {"@type": "Answer", "text": "In VS Code's secret storage on your machine. It is never written to a settings file and is sent only to Anthropic."}}]}]</script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+<a class="brand" href="../"><img src="../logo.png" alt="" width="30" height="30">Stoat</a>
+<nav><a href="../#guides">Guides</a><a href="../#faq" class="hide-sm">FAQ</a><a href="https://github.com/AliAlalawi14/stoat">GitHub</a></nav>
+</div></header>
+<main class="article">
+<p class="crumbs"><a href="../">Stoat</a> › <a href="../#guides">Guides</a></p>
+<h1>Use your Claude API key in VS Code as a coding agent</h1>
+<p>Claude is one of the strongest models for agentic coding. Stoat lets you use it in the VS Code you already have, with your own Anthropic API key, paying only for what you use.</p>
+
+<h2>1. Get an Anthropic API key</h2>
+<ol>
+<li>Sign in at <a href="https://console.anthropic.com/settings/keys">console.anthropic.com</a>, add billing, and create an API key.</li>
+</ol>
+<div class="note"><p><strong>What about Claude Pro or Max?</strong> A subscription can't be used here. Anthropic only allows
+subscription logins in Claude.ai and Claude Code; other tools, including Stoat, must use an API key (or Claude through
+your company's cloud such as AWS Bedrock, Google Vertex or Microsoft Foundry).</p></div>
+<h2>2. Install Stoat</h2><ol>
+<li><strong>Install Stoat.</strong> In VS Code open Extensions (<kbd>Ctrl+Shift+X</kbd>), search <em>Stoat</em> and install
+<em>Stoat – AI Coding Agent</em>. (Cursor, Windsurf and VSCodium find it on Open VSX the same way.)</li>
+<li><strong>Open your project folder</strong> and click the Stoat icon in the activity bar (or press <kbd>Ctrl+Shift+L</kbd>).</li>
+</ol>
+<h2>3. Connect Claude</h2>
+<ol>
+<li>In <strong>Connect a model</strong>, pick <strong>Anthropic (Claude)</strong>.</li>
+<li>Paste the key and click <strong>Save &amp; connect</strong>.</li>
+<li>Pick a Claude model in the model menu at the top of the panel.</li>
+</ol>
+<h2>4. Let it work, then review</h2>
+<p>Use <strong>Plan</strong> mode to agree on an approach first, then <strong>Build</strong>, or go straight to <strong>Agent</strong> mode.</p>
+<p>When the agent finishes, a review bar lists every file it changed. Click a file to see the diff, then
+<strong>Keep</strong> or <strong>Undo</strong> it (or <strong>Keep all</strong> / <strong>Undo all</strong>). Commands such as
+<code>npm test</code> or <code>dotnet build</code> always wait for your approval first.</p>
+<h2>Keeping costs in check</h2>
+<ul>
+<li>Turn on <em>Settings → Show Metrics</em> to see the cost of every reply.</li>
+<li>Stoat orders its prompts so Claude's prompt caching applies, which lowers the cost of long sessions.</li>
+<li>Add a cheaper provider too (DeepSeek, Gemini) and switch per message for simple tasks.</li>
+</ul>
+<h2>FAQ</h2>
+<details><summary>Can I use my Claude Pro subscription in VS Code extensions?</summary><p>No. Anthropic allows subscription logins only in Claude.ai and Claude Code. Third-party tools like Stoat need an API key from console.anthropic.com.</p></details>
+<details><summary>Where is my Anthropic key stored?</summary><p>In VS Code&#x27;s secret storage on your machine. It is never written to a settings file and is sent only to Anthropic.</p></details>
+<div class="cta">
+<p><strong>Stoat is free and open source.</strong> Small agent, takes on the big ones.</p>
+<div class="buttons">
+<a class="btn primary" href="https://marketplace.visualstudio.com/items?itemName=AliAlalawi14.stoat">Install for VS Code</a>
+<a class="btn" href="https://open-vsx.org/extension/AliAlalawi14/stoat">Open VSX</a>
+<a class="btn" href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+</div></div>
+<p class="small">More guides: <a href="deepseek-vscode-coding-agent.html">How to use DeepSeek as a coding agent in VS Code</a> · <a href="ollama-local-coding-agent-vscode.html">Run a free, local AI coding agent in VS Code with Ollama</a> · <a href="gemini-groq-openrouter-vscode.html">Use Gemini, Groq or OpenRouter as a coding agent in VS Code</a> · <a href="open-source-cursor-alternative-vscode.html">An open-source Cursor alternative for VS Code</a></p>
+</main>
+<footer><div class="wrap">
+<span>Stoat · MIT license</span>
+<a href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+<a href="https://github.com/AliAlalawi14/stoat/issues">Report a bug</a>
+<a href="https://github.com/AliAlalawi14/stoat/blob/main/SECURITY.md">Security</a>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>An Open-Source Cursor Alternative for VS Code (Bring Your Own Model) | Stoat</title>
+<meta name="description" content="Looking for an open-source Cursor alternative? Stoat adds an AI coding agent to regular VS Code: any model with your own key, local models, and Keep/Undo review of every change. Free, MIT licensed.">
+<link rel="canonical" href="https://alialalawi14.github.io/stoat/guides/open-source-cursor-alternative-vscode.html">
+<link rel="icon" type="image/png" href="../logo.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Stoat">
+<meta property="og:title" content="An Open-Source Cursor Alternative for VS Code (Bring Your Own Model)">
+<meta property="og:description" content="Looking for an open-source Cursor alternative? Stoat adds an AI coding agent to regular VS Code: any model with your own key, local models, and Keep/Undo review of every change. Free, MIT licensed.">
+<meta property="og:url" content="https://alialalawi14.github.io/stoat/guides/open-source-cursor-alternative-vscode.html">
+<meta property="og:image" content="https://alialalawi14.github.io/stoat/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../styles.css">
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "TechArticle", "headline": "An Open-Source Cursor Alternative for VS Code (Bring Your Own Model)", "description": "Looking for an open-source Cursor alternative? Stoat adds an AI coding agent to regular VS Code: any model with your own key, local models, and Keep/Undo review of every change. Free, MIT licensed.", "url": "https://alialalawi14.github.io/stoat/guides/open-source-cursor-alternative-vscode.html", "image": "https://alialalawi14.github.io/stoat/og.png", "author": {"@type": "Organization", "name": "Stoat"}, "about": {"@type": "SoftwareApplication", "name": "Stoat", "applicationCategory": "DeveloperApplication"}}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is there a free, open-source alternative to Cursor?", "acceptedAnswer": {"@type": "Answer", "text": "Stoat is a free, MIT-licensed VS Code extension that provides an AI coding agent with multi-file edits and Keep/Undo review, using any model with your own key."}}, {"@type": "Question", "name": "Can I use Stoat inside Cursor?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Stoat is published on Open VSX, the extension store used by Cursor, Windsurf and VSCodium."}}]}]</script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+<a class="brand" href="../"><img src="../logo.png" alt="" width="30" height="30">Stoat</a>
+<nav><a href="../#guides">Guides</a><a href="../#faq" class="hide-sm">FAQ</a><a href="https://github.com/AliAlalawi14/stoat">GitHub</a></nav>
+</div></header>
+<main class="article">
+<p class="crumbs"><a href="../">Stoat</a> › <a href="../#guides">Guides</a></p>
+<h1>An open-source Cursor alternative for VS Code</h1>
+<p>Cursor made the agent workflow popular: describe a change, let the AI edit several files, then review. Stoat brings that workflow to the regular VS Code you already use, as a free, open-source extension where you choose the model.</p>
+
+<h2>What Stoat gives you</h2>
+<ul>
+<li><strong>An agent in VS Code</strong>: it reads your project, edits files and runs your build and tests (commands wait for your approval).</li>
+<li><strong>Review after, not approve before</strong>: it works without stopping at every file; then you Keep or Undo each change, each file, or all of them.</li>
+<li><strong>Any model, your own key</strong>: Claude, GPT, Gemini, DeepSeek, Mistral, Grok, OpenRouter, Azure, any OpenAI-compatible API.</li>
+<li><strong>Local models</strong>: Ollama or LM Studio, for code that must not leave your machine.</li>
+<li><strong>Plan mode</strong>: clarifying questions first, then an editable Markdown plan that Build follows.</li>
+<li><strong>Open source (MIT)</strong>: read exactly what it does; no account, no telemetry.</li>
+</ul>
+<h2>What it doesn't do (yet)</h2>
+<p>To be clear about the trade-offs: Stoat is a chat-and-agent panel. It doesn't replace your editor, and it doesn't
+provide inline tab autocompletion or edit-in-place suggestions inside the editor. Many people pair it with the
+completion tool they already like.</p>
+<h2>How it compares</h2>
+<div class="scroll"><table class="table">
+<tr><th></th><th>Stoat</th><th>Subscription AI editors</th></tr>
+<tr><td>Editor</td><td>Your existing VS Code (also Cursor, Windsurf, VSCodium)</td><td>Their own editor</td></tr>
+<tr><td>Model choice</td><td>Any provider or local model</td><td>Their selection</td></tr>
+<tr><td>Pricing</td><td>Free; you pay your provider per use</td><td>Monthly subscription</td></tr>
+<tr><td>Source code</td><td>Open (MIT)</td><td>Closed</td></tr>
+<tr><td>Works offline</td><td>Yes, with a local model</td><td>Usually not</td></tr>
+</table></div>
+<h2>Try it in two minutes</h2><ol>
+<li><strong>Install Stoat.</strong> In VS Code open Extensions (<kbd>Ctrl+Shift+X</kbd>), search <em>Stoat</em> and install
+<em>Stoat – AI Coding Agent</em>. (Cursor, Windsurf and VSCodium find it on Open VSX the same way.)</li>
+<li><strong>Open your project folder</strong> and click the Stoat icon in the activity bar (or press <kbd>Ctrl+Shift+L</kbd>).</li>
+</ol>
+<ol start="3"><li>Connect a model in the panel (pick a provider, paste a key; or pick Ollama for a free local model) and ask away.</li></ol>
+<p>When the agent finishes, a review bar lists every file it changed. Click a file to see the diff, then
+<strong>Keep</strong> or <strong>Undo</strong> it (or <strong>Keep all</strong> / <strong>Undo all</strong>). Commands such as
+<code>npm test</code> or <code>dotnet build</code> always wait for your approval first.</p>
+<h2>FAQ</h2>
+<details><summary>Is there a free, open-source alternative to Cursor?</summary><p>Stoat is a free, MIT-licensed VS Code extension that provides an AI coding agent with multi-file edits and Keep/Undo review, using any model with your own key.</p></details>
+<details><summary>Can I use Stoat inside Cursor?</summary><p>Yes. Stoat is published on Open VSX, the extension store used by Cursor, Windsurf and VSCodium.</p></details>
+<div class="cta">
+<p><strong>Stoat is free and open source.</strong> Small agent, takes on the big ones.</p>
+<div class="buttons">
+<a class="btn primary" href="https://marketplace.visualstudio.com/items?itemName=AliAlalawi14.stoat">Install for VS Code</a>
+<a class="btn" href="https://open-vsx.org/extension/AliAlalawi14/stoat">Open VSX</a>
+<a class="btn" href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+</div></div>
+<p class="small">More guides: <a href="deepseek-vscode-coding-agent.html">How to use DeepSeek as a coding agent in VS Code</a> · <a href="ollama-local-coding-agent-vscode.html">Run a free, local AI coding agent in VS Code with Ollama</a> · <a href="claude-api-key-vscode-agent.html">Use your Claude API key in VS Code as a coding agent</a> · <a href="gemini-groq-openrouter-vscode.html">Use Gemini, Groq or OpenRouter as a coding agent in VS Code</a></p>
+</main>
+<footer><div class="wrap">
+<span>Stoat · MIT license</span>
+<a href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+<a href="https://github.com/AliAlalawi14/stoat/issues">Report a bug</a>
+<a href="https://github.com/AliAlalawi14/stoat/blob/main/SECURITY.md">Security</a>
+</div></footer>
+</body>
+</html>

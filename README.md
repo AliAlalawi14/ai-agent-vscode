@@ -8,9 +8,10 @@
 
 An open-source AI coding agent for VS Code. Bring your own model; review every change.
 
+[Website & guides](https://alialalawi14.github.io/stoat/) ·
 [Install from the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=AliAlalawi14.stoat) ·
 [Open VSX (Cursor, Windsurf, VSCodium)](https://open-vsx.org/extension/AliAlalawi14/stoat) ·
-[Report a bug](https://github.com/AliAlalawi14/ai-agent-vscode/issues)
+[Report a bug](https://github.com/AliAlalawi14/stoat/issues)
 
 </div>
 
@@ -37,7 +38,7 @@ agent built to compete with the big, closed ones: no subscription, no lock-in, a
 |---|---|
 | **VS Code** | Extensions view → search **Stoat**, or the [Marketplace page](https://marketplace.visualstudio.com/items?itemName=AliAlalawi14.stoat) |
 | **Cursor, Windsurf, VSCodium** | Extensions view → search **Stoat** ([Open VSX](https://open-vsx.org/extension/AliAlalawi14/stoat)) |
-| **Offline / specific version** | Download the `.vsix` for your platform from [Releases](https://github.com/AliAlalawi14/ai-agent-vscode/releases), then *Extensions → … → Install from VSIX* |
+| **Offline / specific version** | Download the `.vsix` for your platform from [Releases](https://github.com/AliAlalawi14/stoat/releases), then *Extensions → … → Install from VSIX* |
 
 Then open a folder, click the Stoat icon, connect a model in the panel, and ask away.
 The full user guide is on the [extension page](ai-chat-extension/README.md).
@@ -85,8 +86,8 @@ The full user guide is on the [extension page](ai-chat-extension/README.md).
 Requirements: [.NET 10 SDK](https://dotnet.microsoft.com/download), Node.js 20+, VS Code.
 
 ```bash
-git clone https://github.com/AliAlalawi14/ai-agent-vscode.git
-cd ai-agent-vscode
+git clone https://github.com/AliAlalawi14/stoat.git
+cd stoat
 
 # 1. Backend tests
 dotnet test Ai-Agent

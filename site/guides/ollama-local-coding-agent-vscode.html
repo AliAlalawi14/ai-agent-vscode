@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run a Free, Local AI Coding Agent in VS Code with Ollama | Stoat</title>
+<meta name="description" content="Run an AI coding agent in VS Code fully offline with Ollama or LM Studio. No API key, no cost, your code never leaves your machine. Setup in five minutes with the free Stoat extension.">
+<link rel="canonical" href="https://alialalawi14.github.io/stoat/guides/ollama-local-coding-agent-vscode.html">
+<link rel="icon" type="image/png" href="../logo.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Stoat">
+<meta property="og:title" content="Run a Free, Local AI Coding Agent in VS Code with Ollama">
+<meta property="og:description" content="Run an AI coding agent in VS Code fully offline with Ollama or LM Studio. No API key, no cost, your code never leaves your machine. Setup in five minutes with the free Stoat extension.">
+<meta property="og:url" content="https://alialalawi14.github.io/stoat/guides/ollama-local-coding-agent-vscode.html">
+<meta property="og:image" content="https://alialalawi14.github.io/stoat/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../styles.css">
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Run a Free, Local AI Coding Agent in VS Code with Ollama", "description": "Run an AI coding agent in VS Code fully offline with Ollama or LM Studio. No API key, no cost, your code never leaves your machine. Setup in five minutes with the free Stoat extension.", "url": "https://alialalawi14.github.io/stoat/guides/ollama-local-coding-agent-vscode.html", "image": "https://alialalawi14.github.io/stoat/og.png", "author": {"@type": "Organization", "name": "Stoat"}, "about": {"@type": "SoftwareApplication", "name": "Stoat", "applicationCategory": "DeveloperApplication"}}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does a local coding agent send my code anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "No. With Ollama or LM Studio the model runs on your computer, and Stoat has no server and no telemetry, so your code stays on your machine."}}, {"@type": "Question", "name": "Which local model should I use?", "acceptedAnswer": {"@type": "Answer", "text": "Pick a model that supports tool calling. Larger models give better results but need more memory; start with what your hardware runs comfortably."}}]}]</script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+<a class="brand" href="../"><img src="../logo.png" alt="" width="30" height="30">Stoat</a>
+<nav><a href="../#guides">Guides</a><a href="../#faq" class="hide-sm">FAQ</a><a href="https://github.com/AliAlalawi14/stoat">GitHub</a></nav>
+</div></header>
+<main class="article">
+<p class="crumbs"><a href="../">Stoat</a> › <a href="../#guides">Guides</a></p>
+<h1>Run a free, local AI coding agent in VS Code with Ollama</h1>
+<p>If your code can&#x27;t leave your machine, or you just don&#x27;t want another bill, run the model locally. Stoat talks to Ollama (or LM Studio) on your own computer: no key, no account, and nothing is sent anywhere.</p>
+
+<h2>1. Install Ollama and a model</h2>
+<ol>
+<li>Install Ollama from <a href="https://ollama.com/download">ollama.com</a> and start it (the app, or <code>ollama serve</code>).</li>
+<li>Pull a model that supports <strong>tool calling</strong>, which the agent needs to read and edit files. For example:
+<pre><code>ollama pull qwen3:14b</code></pre>
+On a laptop with less memory, try a smaller variant such as <code>qwen3:8b</code>.</li>
+</ol>
+<h2>2. Install Stoat</h2><ol>
+<li><strong>Install Stoat.</strong> In VS Code open Extensions (<kbd>Ctrl+Shift+X</kbd>), search <em>Stoat</em> and install
+<em>Stoat – AI Coding Agent</em>. (Cursor, Windsurf and VSCodium find it on Open VSX the same way.)</li>
+<li><strong>Open your project folder</strong> and click the Stoat icon in the activity bar (or press <kbd>Ctrl+Shift+L</kbd>).</li>
+</ol>
+<h2>3. Connect Ollama</h2>
+<ol>
+<li>In <strong>Connect a model</strong>, pick <strong>Ollama (local)</strong>. Stoat reads your installed models automatically.</li>
+<li>Tick the model(s) you want and click <strong>Save &amp; connect</strong>.</li>
+</ol>
+<p class="note"><strong>Using LM Studio instead?</strong> Start its local server (Developer tab → Start server, port 1234) and pick <strong>LM Studio (local)</strong> in Stoat.</p>
+<h2>4. Work with it</h2>
+<p>Ask a question in <strong>Ask</strong> mode, or switch to <strong>Agent</strong> (<kbd>Shift+Tab</kbd>) to let it edit.</p>
+<p>When the agent finishes, a review bar lists every file it changed. Click a file to see the diff, then
+<strong>Keep</strong> or <strong>Undo</strong> it (or <strong>Keep all</strong> / <strong>Undo all</strong>). Commands such as
+<code>npm test</code> or <code>dotnet build</code> always wait for your approval first.</p>
+<h2>Troubleshooting</h2>
+<ul>
+<li><strong>"Nothing answered at http://localhost:11434/v1"</strong>: Ollama isn't running. Start the app or run <code>ollama serve</code>.</li>
+<li><strong>No models listed</strong>: pull one first (<code>ollama pull …</code>), then click <em>Try loading again</em>.</li>
+<li><strong>It answers but never edits files</strong>: the model may not support tool calling. Try another model, or check you're in Agent mode.</li>
+</ul>
+<h2>FAQ</h2>
+<details><summary>Does a local coding agent send my code anywhere?</summary><p>No. With Ollama or LM Studio the model runs on your computer, and Stoat has no server and no telemetry, so your code stays on your machine.</p></details>
+<details><summary>Which local model should I use?</summary><p>Pick a model that supports tool calling. Larger models give better results but need more memory; start with what your hardware runs comfortably.</p></details>
+<div class="cta">
+<p><strong>Stoat is free and open source.</strong> Small agent, takes on the big ones.</p>
+<div class="buttons">
+<a class="btn primary" href="https://marketplace.visualstudio.com/items?itemName=AliAlalawi14.stoat">Install for VS Code</a>
+<a class="btn" href="https://open-vsx.org/extension/AliAlalawi14/stoat">Open VSX</a>
+<a class="btn" href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+</div></div>
+<p class="small">More guides: <a href="deepseek-vscode-coding-agent.html">How to use DeepSeek as a coding agent in VS Code</a> · <a href="claude-api-key-vscode-agent.html">Use your Claude API key in VS Code as a coding agent</a> · <a href="gemini-groq-openrouter-vscode.html">Use Gemini, Groq or OpenRouter as a coding agent in VS Code</a> · <a href="open-source-cursor-alternative-vscode.html">An open-source Cursor alternative for VS Code</a></p>
+</main>
+<footer><div class="wrap">
+<span>Stoat · MIT license</span>
+<a href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+<a href="https://github.com/AliAlalawi14/stoat/issues">Report a bug</a>
+<a href="https://github.com/AliAlalawi14/stoat/blob/main/SECURITY.md">Security</a>
+</div></footer>
+</body>
+</html>

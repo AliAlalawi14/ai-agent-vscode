@@ -97,7 +97,7 @@ Agent and Plan modes need models that support **tool calling**. Most current mod
 - **Commands** run without a shell, from an allow-list, and wait for your approval (Auto mode runs only safe ones by itself).
 - **Secrets**: key and certificate files are never read, and keys or tokens in any output are redacted before the model sees them.
 
-Details and how to report a vulnerability: [SECURITY.md](https://github.com/AliAlalawi14/ai-agent-vscode/blob/main/SECURITY.md).
+Details and how to report a vulnerability: [SECURITY.md](https://github.com/AliAlalawi14/stoat/blob/main/SECURITY.md).
 
 ---
 
@@ -131,8 +131,8 @@ Details and how to report a vulnerability: [SECURITY.md](https://github.com/AliA
 - **Ollama: "Nothing answered"**: start Ollama (`ollama serve`) and pull a model first (`ollama pull qwen3:14b`).
 - **The agent answers but never edits**: you're in **Ask** or **Plan** mode, or the model doesn't support tool calling.
 
-Found a bug or have an idea? [Open an issue](https://github.com/AliAlalawi14/ai-agent-vscode/issues).
+Found a bug or have an idea? [Open an issue](https://github.com/AliAlalawi14/stoat/issues).
 
 ## License
 
-[MIT](https://github.com/AliAlalawi14/ai-agent-vscode/blob/main/LICENSE). Free for personal and commercial use.
+[MIT](https://github.com/AliAlalawi14/stoat/blob/main/LICENSE). Free for personal and commercial use.

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://alialalawi14.github.io/stoat/sitemap.xml
