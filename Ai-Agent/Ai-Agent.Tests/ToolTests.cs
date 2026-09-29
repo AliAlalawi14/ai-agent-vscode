@@ -5,21 +5,39 @@ namespace Ai_Agent.Tests
 {
     public class WorkspacePathTests
     {
-        private const string Root = @"C:\ws\project";
+        // C:\ws\project on Windows, /ws/project elsewhere; it doesn't have to exist
+        private static readonly string Root = Path.GetFullPath("/ws/project");
 
         [Theory]
         [InlineData("Calculator.cs")]
         [InlineData("Controllers/HomeController.cs")]
-        [InlineData(@"sub\..\Calculator.cs")]
+        [InlineData("sub/../Calculator.cs")]
         [InlineData("")]
         public void Paths_inside_the_workspace_resolve(string relative) =>
             Assert.NotNull(WorkspacePath.Resolve(Root, relative));
 
+        public static TheoryData<string> OutsidePaths()
+        {
+            var paths = new TheoryData<string>
+            {
+                "../../etc/passwd",
+                "../project-evil/x.cs",    // prefix trick: /ws/project-evil starts with /ws/project
+                "sub/../../outside.txt",
+                Path.GetFullPath("/elsewhere/x.txt"),
+            };
+            // Backslashes and drive letters are separators only on Windows; elsewhere they are file name characters
+            if (OperatingSystem.IsWindows())
+            {
+                paths.Add(@"..\..\Windows\win.ini");
+                paths.Add(@"C:\Windows\win.ini");
+                paths.Add(@"..\project-evil\x.cs");
+                paths.Add(@"sub\..\..\outside.txt");
+            }
+            return paths;
+        }
+
         [Theory]
-        [InlineData(@"..\..\Windows\win.ini")]
-        [InlineData(@"C:\Windows\win.ini")]
-        [InlineData(@"..\project-evil\x.cs")]    // prefix trick: C:\ws\project-evil starts with C:\ws\project
-        [InlineData(@"sub\..\..\outside.txt")]
+        [MemberData(nameof(OutsidePaths))]
         public void Paths_outside_the_workspace_are_refused(string relative) =>
             Assert.Null(WorkspacePath.Resolve(Root, relative));
 
