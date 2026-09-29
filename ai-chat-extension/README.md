@@ -14,6 +14,7 @@ sends your code anywhere.
 - ✅ **Review, don't babysit.** The agent edits without stopping; when it's done you get every changed file with **Keep / Undo**, per file or all at once.
 - 🗺️ **Plan before building.** Plan mode asks what it needs to know, then writes an editable plan file that **Build** follows step by step.
 - 🛡️ **Safe by default.** It only touches the open folder, commands wait for your approval, secrets are redacted, and every change can be undone.
+- 🧩 **More tools when you want them.** MCP servers (a browser, GitHub, library docs, databases…), web page reading and search, and optional tab autocomplete.
 - 📦 **Nothing to install.** The agent's engine ships inside the extension and starts by itself. No Python, no .NET, no Docker.
 
 ---
@@ -58,6 +59,27 @@ When a run finishes, the review bar above the input lists every file the agent c
 
 Prefer to approve each edit *before* it's written? Turn off **Settings → Review edits after they're applied**.
 
+### MCP servers: give the agent more tools
+
+Settings (⚙️) → **MCP servers** connects [Model Context Protocol](https://modelcontextprotocol.io) servers:
+
+- **Quick add**: **Browser (Playwright)** to open pages, click and fill forms; **Library docs (Context7)**; **GitHub** (issues, PRs, code search).
+- **Import** the servers you already use in Cursor, Claude Desktop, Claude Code, Windsurf or VS Code.
+- **Any server**: a local command (`npx …`, `uvx …`) or a remote URL, with environment variables or headers. Tokens go to secret storage.
+- Each server shows its status, errors, tools and what it adds to every request, so you can switch off tools you don't need.
+- **MCP tools ask before they run** (Run / Reject), also in Auto mode, unless you turn on *Run its tools without asking* for a server you trust.
+
+Servers are configured in your user settings only, so a project you open can't add programs to run. Local servers start in your project folder (the browser saves page snapshots to `.playwright-mcp/`; add it to `.gitignore`).
+
+### Web pages and search
+
+- **web_fetch** reads public pages (docs, issues, changelogs) as Markdown. It **asks before each fetch** by default and always refuses your computer, your network and cloud metadata addresses.
+- **web_search** uses the provider you choose in Settings → **Web**: Brave Search API, Tavily, or your own SearXNG.
+
+### Tab autocomplete (optional)
+
+Settings → **Autocomplete**: pick a provider and a code model, click **Try it**, turn it on. Ghost text appears as you type; **Tab** accepts. Works with fill-in-the-middle models: a small local coder model on Ollama (e.g. `qwen2.5-coder:1.5b-base`), Mistral Codestral, DeepSeek, or llama.cpp/vLLM servers, with a slower chat fallback for other models. The status bar item turns it on/off or snoozes it.
+
 ### More
 
 - **@-mentions**: type `@` to add files or symbols as context. The file you're looking at and your selection are included automatically.
@@ -96,6 +118,8 @@ Agent and Plan modes need models that support **tool calling**. Most current mod
 - The agent **can only read and write inside the open folder**. Paths that escape it (`..`, symlinks) are refused.
 - **Commands** run without a shell, from an allow-list, and wait for your approval (Auto mode runs only safe ones by itself).
 - **Secrets**: key and certificate files are never read, and keys or tokens in any output are redacted before the model sees them.
+- **MCP servers** run with your permissions: add only ones you trust. They never see your model API keys.
+- **Autocomplete**, when on, sends the code around your cursor to the provider you chose for it.
 
 Details and how to report a vulnerability: [SECURITY.md](https://github.com/AliAlalawi14/stoat/blob/main/SECURITY.md).
 
@@ -117,6 +141,10 @@ Details and how to report a vulnerability: [SECURITY.md](https://github.com/AliA
 | Setting | Default | |
 |---|---|---|
 | `aiChat.reviewEdits` | `true` | Edits apply at once and you review them afterwards. `false`: each edit waits for Accept. |
+| `aiChat.mcpServers` | `{}` | MCP servers (`mcpServers` format; user settings only). Easier in Settings → MCP servers. |
+| `aiChat.web.fetch` | `ask` | `ask` each URL, `allow`, or `off`. |
+| `aiChat.web.searchProvider` | none | `brave`, `tavily` or `searxng` (key in secret storage). |
+| `aiChat.completion.enabled` | `false` | Tab autocomplete; provider, model and style in Settings → Autocomplete. |
 | `aiChat.providers` | `[]` | Providers added in the panel (keys live in secret storage, not here). |
 | `aiChat.defaultProvider` | first configured | Provider used when no model is picked. |
 | `aiChat.diffViewMode` | `side-by-side` | How diffs open. |
@@ -130,6 +158,8 @@ Details and how to report a vulnerability: [SECURITY.md](https://github.com/AliA
 - **"The provider rejected the key"**: the key is wrong or has no credit; create a new one from the *Get a key* link.
 - **Ollama: "Nothing answered"**: start Ollama (`ollama serve`) and pull a model first (`ollama pull qwen3:14b`).
 - **The agent answers but never edits**: you're in **Ask** or **Plan** mode, or the model doesn't support tool calling.
+- **An MCP server shows "Failed"**: open it in Settings → MCP servers for the error (e.g. an npm 404 or a missing token). Local servers need Node.js (`npx`) or Python (`uvx`).
+- **No autocomplete**: check the status bar item; **Try it** in Settings → Autocomplete shows the exact error.
 
 Found a bug or have an idea? [Open an issue](https://github.com/AliAlalawi14/stoat/issues).
 

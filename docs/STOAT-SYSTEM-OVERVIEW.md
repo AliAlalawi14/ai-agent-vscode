@@ -277,13 +277,18 @@ Known constraints:
 
 ---
 
-## 10. Roadmap (next)
-1. **MCP client**: connect external tools (GitHub, databases, docs, browsers) via the Model Context Protocol, with
-   approvals and per-server trust.
-2. **Web tools**: `web_fetch` (with SSRF protection) and `web_search` (Brave / Tavily / SearXNG); browser
-   automation through the Playwright MCP server.
-3. **Inline tab autocomplete**: ghost-text completions from fill-in-the-middle models (local or cloud), off by default.
-4. Local-model strategy, based on the research above.
+## 10. Tools added in 0.2.0, and what's next
+- **MCP client** (`Ai-Agent/Mcp/`): MCP servers from `Mcp__ServersJson`, started in the background in the project
+  folder; tools exposed as `mcp__server__tool`. Every MCP tool call asks first unless the server is trusted, and
+  servers never inherit model keys. Browser automation comes through the Playwright MCP server. Each server adds
+  its tools' schemas to every request (Playwright: 25 tools ≈ 4,000 tokens), which matters for small local models;
+  tools can be switched off one by one. Memory measured on Windows: the backend stays ~90–100 MB; the Playwright
+  server adds ~140 MB of Node processes before its headless browser starts (more while browsing).
+- **Web tools** (`Ai-Agent/Web/`): `web_fetch` (SSRF guard at connect time, HTML → Markdown, paging) and `web_search`
+  (Brave / Tavily / SearXNG).
+- **Inline autocomplete** (`ai-chat-extension/src/completion/`): extension-side, direct to the provider,
+  fill-in-the-middle styles plus a chat fallback. For offline use, a small local FIM model (1–3B) is the natural fit.
+- **Next**: the local-model strategy, based on the research questions above.
 
 ---
 

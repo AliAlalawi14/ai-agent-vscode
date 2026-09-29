@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.2.0: MCP, web and autocomplete
+
+### Added
+- **MCP servers** (Model Context Protocol, official C# SDK): local (stdio) or remote (HTTP/SSE) servers; tools
+  offered as `mcp__server__tool`, with schemas made compatible with every provider. Settings → MCP servers:
+  - presets: **Browser (Playwright)**, **Context7 docs**, **GitHub**;
+  - import from Cursor, Claude Desktop, Claude Code, Windsurf and VS Code;
+  - custom servers, status and errors, per-tool on/off, "always allow", and tokens in secret storage.
+
+  MCP tools ask before they run (also in Auto mode); servers never get the model API keys.
+- **Web tools**:
+  - `web_fetch` reads public pages as Markdown, with SSRF protection at connect time; it asks per URL by default.
+  - `web_search` works through Brave Search API, Tavily or SearXNG.
+- **Tab autocomplete** (off by default): ghost text from fill-in-the-middle models:
+  - supported: DeepSeek, Mistral Codestral, Ollama, llama.cpp/vLLM, plus a chat fallback;
+  - **Try it** in Settings, and a status-bar toggle and snooze.
+- `docs/STOAT-SYSTEM-OVERVIEW.md`: how Stoat works, for contributors and AI assistants.
+
+### Changed
+- Auto mode auto-approves only file edits and allow-listed commands; any other tool that needs approval asks.
+- Local MCP servers start in the project folder; the backend's process tree is ended with it on Windows.
+- Backend protocol 6.
+
 ## 0.1.0: first public release as **Stoat**
 
 ### Added

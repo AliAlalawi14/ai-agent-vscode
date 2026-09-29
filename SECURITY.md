@@ -14,6 +14,9 @@ This page says what protects you, what doesn't, and how to report a problem.
 | Commands | No shell: one allow-listed program per call (`dotnet build`, `git status`, detected test/build commands...), arguments passed as-is, so `&&`, pipes, redirects and `$(...)` can't chain commands. Options that write files or run other programs are blocked. |
 | Network | The backend listens on localhost only and requires a random token on every request. |
 | Plans | Plan mode can only read files; it writes nothing but its own plan file in `.ai/plans/`. |
+| MCP servers | Configured in **user settings only** (`aiChat.mcpServers`), so an opened project can't add programs to run. Every MCP tool call asks first (also in Auto mode) unless you mark a server as trusted. Servers start in the project folder and get your normal environment **without** the backend's configuration: no model API keys, no agent token. Their tokens are kept in secret storage. A server runs with your permissions: only add servers you trust. |
+| Web | `web_fetch` only reaches public addresses: loopback, private, link-local and cloud-metadata ranges (IPv4 and IPv6, including mapped/NAT64 forms) are refused when the connection is made, on the address actually used, and on every redirect; no proxy is used. It asks before each fetch by default, because a hijacked prompt could try to send data out in a URL. `web_search` sends only the query to the provider you chose. |
+| Autocomplete | Off by default. When on, the code around the cursor (a few thousand characters) goes directly from VS Code to the provider you picked for it. |
 
 ## What it does NOT protect against
 

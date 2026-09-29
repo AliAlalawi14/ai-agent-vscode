@@ -35,11 +35,14 @@
 <li><strong>Local models</strong>: Ollama or LM Studio, for code that must not leave your machine.</li>
 <li><strong>Plan mode</strong>: clarifying questions first, then an editable Markdown plan that Build follows.</li>
 <li><strong>Open source (MIT)</strong>: read exactly what it does; no account, no telemetry.</li>
+<li><strong>MCP servers</strong>: a Playwright browser, GitHub, library docs or any MCP server; import the ones you use in Cursor or Claude.</li>
+<li><strong>Web pages and search</strong>, with protection against reaching your local network.</li>
+<li><strong>Optional tab autocomplete</strong> from a local or cloud code model.</li>
 </ul>
 <h2>What it doesn't do (yet)</h2>
-<p>To be clear about the trade-offs: Stoat is a chat-and-agent panel. It doesn't replace your editor, and it doesn't
-provide inline tab autocompletion or edit-in-place suggestions inside the editor. Many people pair it with the
-completion tool they already like.</p>
+<p>To be clear about the trade-offs: Stoat's autocomplete is classic ghost text (fill-in-the-middle); it doesn't predict
+your next edit elsewhere in the file the way Cursor Tab does, and it doesn't replace your editor. It's an open project
+by a small team, not a large company.</p>
 <h2>How it compares</h2>
 <div class="scroll"><table class="table">
 <tr><th></th><th>Stoat</th><th>Subscription AI editors</th></tr>
@@ -48,6 +51,8 @@ completion tool they already like.</p>
 <tr><td>Pricing</td><td>Free; you pay your provider per use</td><td>Monthly subscription</td></tr>
 <tr><td>Source code</td><td>Open (MIT)</td><td>Closed</td></tr>
 <tr><td>Works offline</td><td>Yes, with a local model</td><td>Usually not</td></tr>
+<tr><td>MCP servers</td><td>Yes (presets, import from Cursor / Claude)</td><td>Yes</td></tr>
+<tr><td>Tab autocomplete</td><td>Ghost text from your chosen model</td><td>Yes, with next-edit prediction</td></tr>
 </table></div>
 <h2>Try it in two minutes</h2><ol>
 <li><strong>Install Stoat.</strong> In VS Code open Extensions (<kbd>Ctrl+Shift+X</kbd>), search <em>Stoat</em> and install
