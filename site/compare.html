@@ -14,6 +14,9 @@
 <meta property="og:url" content="https://alialalawi14.github.io/stoat/compare.html">
 <meta property="og:image" content="https://alialalawi14.github.io/stoat/og.png">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700;800&display=swap">
 <link rel="stylesheet" href="styles.css">
 <style>
   .compare th:first-child, .compare td:first-child { color: var(--muted); font-weight: 600; white-space: nowrap; }
@@ -87,16 +90,16 @@
       <tr><td>Form</td><td class="us">VS Code extension (also Cursor, Windsurf, VSCodium)</td><td>Own editor (VS Code fork)</td><td>Terminal CLI + IDE extensions</td><td>Own editor (VS Code fork)</td></tr>
       <tr><td>Price</td><td class="us"><span class="yes">Free</span>; you pay your provider per use (or nothing, locally)</td><td>Free tier; $20 Pro, $60 Pro+, $200 Ultra per month; usage beyond the plan billed extra</td><td>Claude Pro $20, Max $100–$200 per month (shared 5-hour and weekly limits), or API</td><td>Free tier; $20 Pro, $200 Max per month, with quotas</td></tr>
       <tr><td>Models</td><td class="us"><span class="yes">Any provider, your key</span></td><td>Their selection of frontier models + own models</td><td>Claude</td><td>Own models + others</td></tr>
-      <tr><td>Local / offline</td><td class="us"><span class="yes">✅</span> Ollama, LM Studio, any local server</td><td><span class="no">❌</span></td><td><span class="meh">Unofficial workarounds</span></td><td><span class="no">❌</span></td></tr>
-      <tr><td>Open source</td><td class="us"><span class="yes">✅ MIT</span></td><td><span class="no">❌</span></td><td><span class="no">❌</span></td><td><span class="no">❌</span></td></tr>
+      <tr><td>Local / offline</td><td class="us"><span class="yes">✓</span> Ollama, LM Studio, any local server</td><td><span class="no">✗</span></td><td><span class="meh">Unofficial workarounds</span></td><td><span class="no">✗</span></td></tr>
+      <tr><td>Open source</td><td class="us"><span class="yes">✓ MIT</span></td><td><span class="no">✗</span></td><td><span class="no">✗</span></td><td><span class="no">✗</span></td></tr>
       <tr><td>Account / telemetry</td><td class="us"><span class="yes">None</span></td><td>Account required</td><td>Account required</td><td>Account required</td></tr>
-      <tr><td>Tab autocomplete</td><td class="us"><span class="yes">✅</span> ghost text from your model, or <b>offline</b> with a small local model</td><td><span class="yes">✅</span> best in class (next-edit prediction)</td><td><span class="no">❌</span></td><td><span class="yes">✅</span></td></tr>
-      <tr><td>MCP servers</td><td class="us"><span class="yes">✅</span> presets + import from Cursor / Claude / VS Code</td><td><span class="yes">✅</span></td><td><span class="yes">✅</span></td><td><span class="yes">✅</span></td></tr>
-      <tr><td>Web search / fetch</td><td class="us"><span class="yes">✅</span> fetch with local-network protection; search via Brave, Tavily or SearXNG</td><td><span class="yes">✅</span></td><td><span class="yes">✅</span></td><td><span class="yes">✅</span></td></tr>
-      <tr><td>Checks its own work</td><td class="us"><span class="yes">✅ Automatic</span> build + tests after every change; failures fixed; result in the review</td><td>Agent can run tests when it decides to</td><td>Agent can run tests; hooks can automate</td><td>Agent can run tests when it decides to</td></tr>
+      <tr><td>Tab autocomplete</td><td class="us"><span class="yes">✓</span> ghost text from your model, or <b>offline</b> with a small local model</td><td><span class="yes">✓</span> best in class (next-edit prediction)</td><td><span class="no">✗</span></td><td><span class="yes">✓</span></td></tr>
+      <tr><td>MCP servers</td><td class="us"><span class="yes">✓</span> presets + import from Cursor / Claude / VS Code</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+      <tr><td>Web search / fetch</td><td class="us"><span class="yes">✓</span> fetch with local-network protection; search via Brave, Tavily or SearXNG</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+      <tr><td>Checks its own work</td><td class="us"><span class="yes">✓ Automatic</span> build + tests after every change; failures fixed; result in the review</td><td>Agent can run tests when it decides to</td><td>Agent can run tests; hooks can automate</td><td>Agent can run tests when it decides to</td></tr>
       <tr><td>Reviewing changes</td><td class="us">Keep / Undo per edit, per file or all; exact undo</td><td>Review and checkpoints</td><td>Permission prompts, diffs</td><td>Review and approvals</td></tr>
       <tr><td>Cost control</td><td class="us">Cost per reply + <b>budget per task</b></td><td>Plan credits, spend limits</td><td>Plan limits</td><td>Plan quotas</td></tr>
-      <tr><td>Background / parallel agents</td><td class="us"><span class="no">❌</span></td><td><span class="yes">✅</span></td><td><span class="yes">✅</span> subagents</td><td><span class="yes">✅</span> local and cloud agents</td></tr>
+      <tr><td>Background / parallel agents</td><td class="us"><span class="no">✗</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span> subagents</td><td><span class="yes">✓</span> local and cloud agents</td></tr>
       <tr><td>Safety model</td><td class="us">Workspace-only files, no shell, allow-listed commands, secret redaction, audit log</td><td>Approvals, checkpoints</td><td>Permission prompts, hooks</td><td>Approvals</td></tr>
       <tr><td>Codebase understanding</td><td class="us">Code map + optional semantic search</td><td>Indexing</td><td>Reads on demand</td><td>Indexing, Codemaps</td></tr>
       <tr><td>Quality measured</td><td class="us">Public eval gate: 26 real tasks, 3 runs each</td><td>Internal</td><td>Internal</td><td>Internal</td></tr>
