@@ -64,8 +64,13 @@ namespace Ai_Agent.Mcp
     public sealed class SdkMcpConnector : IMcpConnector
     {
         private readonly ILoggerFactory _loggerFactory;
+        private readonly string? _workspaceRoot;
 
-        public SdkMcpConnector(ILoggerFactory loggerFactory) => _loggerFactory = loggerFactory;
+        public SdkMcpConnector(ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Config.AgentOptions> agent)
+        {
+            _loggerFactory = loggerFactory;
+            _workspaceRoot = agent.Value.WorkspaceRoot;
+        }
 
         public async Task<IMcpConnection> ConnectAsync(McpServerConfig config, CancellationToken cancellationToken)
         {
@@ -88,6 +93,9 @@ namespace Ai_Agent.Mcp
                 Name = config.Name,
                 Command = config.Command!,
                 Arguments = config.Args.ToList(),
+                // Servers work on the project like the agent does (git servers, Playwright's snapshot files the
+                // agent can then read with read_file); the backend's own folder is never their working directory
+                WorkingDirectory = Directory.Exists(_workspaceRoot) ? _workspaceRoot : null,
                 InheritEnvironmentVariables = false,
                 EnvironmentVariables = McpProcess.Environment(config.Env),
                 ShutdownTimeout = TimeSpan.FromSeconds(3),
