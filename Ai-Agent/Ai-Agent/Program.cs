@@ -117,6 +117,12 @@ builder.Services.AddSingleton<PromptBuilder>(sp =>
 builder.Services.AddSingleton<ApprovalBroker>();
 builder.Services.AddSingleton<PlanStore>();
 builder.Services.AddSingleton<AuditLog>();
+// Web tools: web_fetch (public pages only, SSRF-guarded) and web_search (the user's provider)
+builder.Services.Configure<Ai_Agent.Web.WebOptions>(builder.Configuration.GetSection("Web"));
+builder.Services.AddSingleton<Ai_Agent.Web.WebFetcher>();
+builder.Services.AddSingleton(sp => new Ai_Agent.Web.WebSearchClient(new HttpClient(),
+    sp.GetRequiredService<IOptions<Ai_Agent.Web.WebOptions>>().Value));
+
 // MCP servers (external tools): started in the background, stopped with the backend
 builder.Services.Configure<Ai_Agent.Mcp.McpOptions>(builder.Configuration.GetSection("Mcp"));
 builder.Services.AddSingleton<Ai_Agent.Mcp.IMcpConnector, Ai_Agent.Mcp.SdkMcpConnector>();

@@ -137,6 +137,25 @@
             }
           }
         },
+        "aiChat.web.fetch": {
+          "type": "string",
+          "enum": ["ask", "allow", "off"],
+          "enumDescriptions": ["Show each URL for approval before it is opened", "Open public pages without asking", "Don't offer web_fetch"],
+          "default": "ask",
+          "description": "web_fetch lets the agent read public web pages (local and private network addresses are always refused)."
+        },
+        "aiChat.web.searchProvider": {
+          "type": "string",
+          "enum": ["", "brave", "tavily", "searxng"],
+          "enumDescriptions": ["No web search", "Brave Search API (key)", "Tavily (key)", "Your own SearXNG instance (URL, no key)"],
+          "default": "",
+          "description": "Search provider for the web_search tool. The key is stored in secret storage (set it in the chat panel's Settings)."
+        },
+        "aiChat.web.searxngUrl": {
+          "type": "string",
+          "default": "",
+          "description": "SearXNG instance URL (with JSON output enabled), e.g. http://localhost:8080"
+        },
         "aiChat.reviewEdits": {
           "type": "boolean",
           "default": true,

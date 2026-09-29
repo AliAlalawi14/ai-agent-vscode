@@ -13,6 +13,8 @@ export const PROVIDER_KEYS = [
   { id: "anthropic", label: "Anthropic (Claude)", secret: "aiChat.key.anthropic", env: "Anthropic__ApiKey" },
 ] as const;   // every other provider (Gemini, OpenAI, Mistral, Ollama...) is added with "Stoat: Add Provider"
 
+export const WEB_SEARCH_KEY_SECRET = "aiChat.web.searchKey";
+
 /** Where the backend is and how to authenticate; either the managed process or an external URL from settings. */
 export interface BackendConnection {
   url: string;
@@ -228,6 +230,18 @@ export class BackendProcess implements vscode.Disposable {
       if (provider.useMaxCompletionTokens) {env[`${prefix}UseMaxCompletionTokens`] = "true";}
       provider.models.forEach((m, i) => (env[`${prefix}Models__${i}__Id`] = m));
       anyKey = true;
+    }
+
+    // Web tools: fetch mode and the search provider (its key from secret storage)
+    const web = vscode.workspace.getConfiguration("aiChat.web");
+    env.Web__Fetch = web.get<string>("fetch", "ask") || "ask";
+    const searchProvider = web.get<string>("searchProvider", "") ?? "";
+    if (searchProvider) {
+      env.Web__SearchProvider = searchProvider;
+      const searchKey = await this.context.secrets.get(WEB_SEARCH_KEY_SECRET);
+      if (searchKey) { env.Web__SearchApiKey = searchKey; }
+      const searxng = web.get<string>("searxngUrl", "")?.trim();
+      if (searxng) { env.Web__SearxngUrl = searxng; }
     }
 
     // MCP servers: user settings only (a cloned project can't add programs to run), secrets resolved here

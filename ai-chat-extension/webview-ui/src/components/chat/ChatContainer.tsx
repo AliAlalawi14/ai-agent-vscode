@@ -52,12 +52,16 @@ function describeTool(tool: { tool: string; args: Record<string, unknown> }): st
     semantic_search: "Searching",
     list_directory: "Listing",
     run_terminal: "Running",
+    web_fetch: "Reading",
+    web_search: "Searching",
   };
   const mcp = parseMcpToolName(tool.tool);
   if (mcp) return `Using ${mcp.tool} (${mcp.server})…`;
   const verb = verbs[tool.tool] ?? tool.tool.replace(/_/g, " ");
   const a = tool.args ?? {};
-  const target = a.command
+  const target = a.url
+    ? String(a.url).replace(/^https?:\/\//, "").slice(0, 50)
+    : a.command
     ? `\`${String(a.command)}\``
     : a.path
       ? String(a.path).split(/[/\\]/).pop()

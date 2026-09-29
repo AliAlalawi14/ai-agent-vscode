@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AngleSharp" Version="1.8.2" />
     <PackageReference Include="Anthropic" Version="12.50.0" />
     <PackageReference Include="ChromaDB.Client" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />

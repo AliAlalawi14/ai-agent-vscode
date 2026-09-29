@@ -49,7 +49,7 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     // MCP servers changed (panel or settings.json): restart so the backend starts the new set
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (!e.affectsConfiguration('aiChat.mcpServers') || BackendProcess.isExternal()) { return; }
+      if (!(e.affectsConfiguration('aiChat.mcpServers') || e.affectsConfiguration('aiChat.web')) || BackendProcess.isExternal()) { return; }
       clearTimeout(mcpRestart);
       mcpRestart = setTimeout(() => { void backend.restartIfRunning(); }, 400);
     })

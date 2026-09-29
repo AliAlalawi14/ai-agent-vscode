@@ -871,6 +871,9 @@ namespace Ai_Agent.Agent.Services
                 "run_terminal" => result.Contains("ERROR") ? "Command failed" : "Command executed",
                 "delete_file" => result.StartsWith("ERROR") ? "Delete failed" : $"Deleted {parameters.GetValueOrDefault("path", "file")}",
                 "move_file" => result.StartsWith("ERROR") ? "Move failed" : $"Moved to {parameters.GetValueOrDefault("new_path", "file")}",
+                "web_fetch" => result.StartsWith("ERROR") ? "Couldn't open the page"
+                    : $"Read {(Uri.TryCreate(parameters.GetValueOrDefault("url"), UriKind.Absolute, out var page) ? page.Host : "page")}",
+                "web_search" => result.StartsWith("ERROR") ? "Search failed" : $"Searched \"{Truncate(parameters.GetValueOrDefault("query") ?? "", 40)}\"",
                 _ => $"Executed {toolName}"
             };
         }

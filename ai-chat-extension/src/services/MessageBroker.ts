@@ -17,6 +17,7 @@ import { authHeaders, backendConnection, getBackendProcess } from "./backendConn
 import { BackendProcess } from "./BackendProcess";
 import { configuredProviders, listProviderModels, removeProvider, saveProvider, setupPresets } from "./providerSetup";
 import { McpPanelService } from "./mcpPanel";
+import { WEB_SEARCH_KEY_SECRET } from "./BackendProcess";
 import { reverseApplyUnifiedPatch } from "./patchUtils";
 import { findStaleBundles, recordLoadedBundles } from "./buildInfo";
 
@@ -264,6 +265,14 @@ export class MessageBroker {
         await this.mcp.handle(message);
         break;
 
+      case "getWeb":
+        await this.postWebState();
+        break;
+
+      case "saveWeb":
+        await this.handleSaveWeb(message);
+        break;
+
       case "openExternal":
         if (/^https:\/\//.test(message.url)) {
           void vscode.env.openExternal(vscode.Uri.parse(message.url));
@@ -485,6 +494,33 @@ export class MessageBroker {
       });
     }
     await this.postSetupState();
+  }
+
+  private async postWebState(): Promise<void> {
+    const web = vscode.workspace.getConfiguration("aiChat.web");
+    this.postMessage({
+      type: "webState",
+      state: {
+        fetch: (web.get<string>("fetch", "ask") as "ask" | "allow" | "off") || "ask",
+        searchProvider: (web.get<string>("searchProvider", "") as "" | "brave" | "tavily" | "searxng") ?? "",
+        hasSearchKey: !!(await this.context.secrets.get(WEB_SEARCH_KEY_SECRET)),
+        searxngUrl: web.get<string>("searxngUrl", "") ?? "",
+      },
+    });
+  }
+
+  /** Settings → Web. The settings change restarts the backend (extension.ts); a new key alone restarts it here. */
+  private async handleSaveWeb(message: Extract<WebviewMessage, { type: "saveWeb" }>): Promise<void> {
+    const web = vscode.workspace.getConfiguration("aiChat.web");
+    const keyChanged = !!message.searchKey?.trim();
+    if (keyChanged) { await this.context.secrets.store(WEB_SEARCH_KEY_SECRET, message.searchKey!.trim()); }
+    const before = [web.get("fetch"), web.get("searchProvider"), web.get("searxngUrl")].join("|");
+    await web.update("fetch", message.fetch, vscode.ConfigurationTarget.Global);
+    await web.update("searchProvider", message.searchProvider, vscode.ConfigurationTarget.Global);
+    await web.update("searxngUrl", message.searxngUrl?.trim() ?? "", vscode.ConfigurationTarget.Global);
+    const after = [message.fetch, message.searchProvider, message.searxngUrl?.trim() ?? ""].join("|");
+    if (keyChanged && before === after) { await getBackendProcess()?.restartIfRunning(); }
+    await this.postWebState();
   }
 
   private async postSetupState(): Promise<void> {

@@ -117,7 +117,10 @@ export type WebviewMessage =
   | { type: "setMcpServer"; name: string; disabled?: boolean; alwaysAllow?: boolean; disabledTools?: string[] }
   | { type: "setMcpSecret"; name: string; value: string }
   | { type: "importMcp"; sourceId: string }
-  | { type: "addMcpPreset"; presetId: string; values: Record<string, string> };
+  | { type: "addMcpPreset"; presetId: string; values: Record<string, string> }
+  // Web tools (Settings → Web)
+  | { type: "getWeb" }
+  | { type: "saveWeb"; fetch: "ask" | "allow" | "off"; searchProvider: "" | "brave" | "tavily" | "searxng"; searchKey?: string; searxngUrl?: string };
 
 // Extension -> Webview
 export type ExtensionMessage =
@@ -180,6 +183,7 @@ export type ExtensionMessage =
   /** Result of saveProvider/removeProvider (ok = saved and the backend is up again) */
   | { type: "providerSaved"; ok: boolean; error?: string }
   | { type: "mcpState"; state: McpState }
+  | { type: "webState"; state: WebState }
   /** Result of an MCP change (the servers restart; mcpState follows) */
   | { type: "mcpResult"; ok: boolean; message: string }
   | {
@@ -374,4 +378,13 @@ export interface McpState {
   importSources: Array<{ id: string; label: string; available: boolean }>;
   presets: Array<{ id: string; label: string; detail: string; added: boolean; needs?: Array<{ key: string; label: string; url?: string }> }>;
   backendRunning: boolean;
+}
+
+// ── Web tools ───────────────────────────────────────────────────────────
+
+export interface WebState {
+  fetch: "ask" | "allow" | "off";
+  searchProvider: "" | "brave" | "tavily" | "searxng";
+  hasSearchKey: boolean;
+  searxngUrl: string;
 }

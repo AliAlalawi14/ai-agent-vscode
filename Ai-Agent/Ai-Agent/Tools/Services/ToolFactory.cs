@@ -57,6 +57,16 @@ namespace Ai_Agent.Tools.Services
             else
                 _vectorIndexer.EnsureIndexedInBackground(workspaceRoot);
 
+            // Web: read a public page (SSRF-guarded), search with the user's provider. Read-only: all modes.
+            if (_serviceProvider.GetService<Web.WebFetcher>() is { } fetcher &&
+                _serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<Web.WebOptions>>()?.Value is { } web)
+            {
+                if (!string.Equals(web.Fetch, "off", StringComparison.OrdinalIgnoreCase))
+                    registry.RegisterTool(new Web.WebFetchTool(fetcher, web));
+                if (Web.WebSearchClient.IsConfigured(web) && _serviceProvider.GetService<Web.WebSearchClient>() is { } search)
+                    registry.RegisterTool(new Web.WebSearchTool(search));
+            }
+
             // Tools of connected MCP servers ("mcp__server__tool"); read-only ones survive the filter below
             if (_serviceProvider.GetService<Mcp.McpConnectionManager>() is { } mcp)
                 foreach (var tool in mcp.CreateTools())
