@@ -22,11 +22,14 @@ edits files and runs your build and tests. When it's done, you **Keep or Undo** 
 
 - **Any model**: Claude, GPT, Gemini, DeepSeek, Mistral, Grok, OpenRouter, Azure OpenAI, any OpenAI-compatible API, or **local models** through Ollama / LM Studio.
 - **No subscription, no account, no telemetry**: you use your own API key and pay only the provider, or run fully offline with a local model.
+- **Checks its own work**: after editing it runs your build and tests, fixes failures, and shows "✓ Build passed · 12/12 tests passed".
+- **Predictable cost**: cost on every reply and an optional budget per task.
 - **Review after, not approve before**: the agent works without stopping at every file; you get a Cursor-style review with Keep/Undo per edit, per file, or all at once.
 - **Plan mode**: clarifying questions first, then an editable Markdown plan that **Build** follows and ticks off.
 - **MCP servers**: plug in a browser (Playwright), GitHub, library docs or any MCP server, or import the ones you use in Cursor / Claude / VS Code. Tools ask before they run.
 - **Web**: read public pages (with SSRF protection) and search with Brave, Tavily or your own SearXNG.
-- **Tab autocomplete** (optional): ghost-text completions from a local or cloud code model.
+- **Tab autocomplete** (optional): one click sets up a small local model through Ollama, so completions are free, private and work offline on a normal laptop; cloud models work too.
+- **How it compares** with Cursor, Claude Code and Devin Desktop: [stoat compared](https://alialalawi14.github.io/stoat/compare.html).
 - **Zero setup**: the engine ships inside the extension and starts by itself. No Python, no .NET, no Docker.
 - **Measured, not claimed**: every change runs through an eval gate of real tasks against a real model, 3 runs each ([`Ai-Agent/evals`](Ai-Agent/evals)). Current baseline: **26/26 tasks pass every run**.
 

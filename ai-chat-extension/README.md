@@ -11,7 +11,9 @@ sends your code anywhere.
      ask a question → Agent edits 2–3 files → review bar → Keep all. -->
 
 - 🔑 **Your key, your model.** No subscription and no account. Pay the provider only for what you use, or pay nothing with Ollama / LM Studio.
+- 🧪 **Checks its own work.** After editing, it runs your build and tests; if they fail, it fixes them before it says "done". The review shows "✓ Build passed · 12/12 tests passed".
 - ✅ **Review, don't babysit.** The agent edits without stopping; when it's done you get every changed file with **Keep / Undo**, per file or all at once.
+- 💵 **Predictable cost.** No subscription; cost on every reply and an optional budget per task.
 - 🗺️ **Plan before building.** Plan mode asks what it needs to know, then writes an editable plan file that **Build** follows step by step.
 - 🛡️ **Safe by default.** It only touches the open folder, commands wait for your approval, secrets are redacted, and every change can be undone.
 - 🧩 **More tools when you want them.** MCP servers (a browser, GitHub, library docs, databases…), web page reading and search, and optional tab autocomplete.
@@ -59,6 +61,14 @@ When a run finishes, the review bar above the input lists every file the agent c
 
 Prefer to approve each edit *before* it's written? Turn off **Settings → Review edits after they're applied**.
 
+### Checks: build and tests after every change
+
+When the agent has changed files (Agent and Auto mode), Stoat runs the project's build and tests automatically, shows the result in the review bar and as a card in the chat, and hands failures back to the agent to fix (up to 2 attempts). Commands are detected from the project: `dotnet`, `npm`/`pnpm`/`yarn`/`bun` scripts (or `tsc` for TypeScript), `cargo`, `go`, Maven, Gradle and `pytest`. Or set your own in Settings → **Checks & budget** (e.g. `npm run lint`, `npm test`). Checks run only in workspaces you trust.
+
+### Budget per task
+
+Settings → **Checks & budget** → *Budget per task*: the agent stops before its next model call once a task has cost that much, and offers **Continue**. It applies to models with a known price (the cost shown under each reply).
+
 ### MCP servers: give the agent more tools
 
 Settings (⚙️) → **MCP servers** connects [Model Context Protocol](https://modelcontextprotocol.io) servers:
@@ -76,9 +86,11 @@ Servers are configured in your user settings only, so a project you open can't a
 - **web_fetch** reads public pages (docs, issues, changelogs) as Markdown. It **asks before each fetch** by default and always refuses your computer, your network and cloud metadata addresses.
 - **web_search** uses the provider you choose in Settings → **Web**: Brave Search API, Tavily, or your own SearXNG.
 
-### Tab autocomplete (optional)
+### Tab autocomplete (optional), offline on any laptop
 
-Settings → **Autocomplete**: pick a provider and a code model, click **Try it**, turn it on. Ghost text appears as you type; **Tab** accepts. Works with fill-in-the-middle models: a small local coder model on Ollama (e.g. `qwen2.5-coder:1.5b-base`), Mistral Codestral, DeepSeek, or llama.cpp/vLLM servers, with a slower chat fallback for other models. The status bar item turns it on/off or snoozes it.
+Settings → **Autocomplete** → **Run on this computer**: one click downloads a small coder model through [Ollama](https://ollama.com) (about 1 GB on a normal laptop, larger when you have more memory) and turns autocomplete on. Suggestions are then free, private and work without internet.
+
+Or pick a cloud provider and a code model, click **Try it**, turn it on. Ghost text appears as you type; **Tab** accepts. Works with fill-in-the-middle models: a small local coder model on Ollama (e.g. `qwen2.5-coder:1.5b-base`), Mistral Codestral, DeepSeek, or llama.cpp/vLLM servers, with a slower chat fallback for other models. The status bar item turns it on/off or snoozes it.
 
 ### More
 
@@ -145,6 +157,9 @@ Details and how to report a vulnerability: [SECURITY.md](https://github.com/AliA
 | `aiChat.web.fetch` | `ask` | `ask` each URL, `allow`, or `off`. |
 | `aiChat.web.searchProvider` | none | `brave`, `tavily` or `searxng` (key in secret storage). |
 | `aiChat.completion.enabled` | `false` | Tab autocomplete; provider, model and style in Settings → Autocomplete. |
+| `aiChat.verify.enabled` | `true` | Build and test after the agent's changes; failures go back to the agent. |
+| `aiChat.verify.commands` | `[]` | Your own check commands (empty = detected). |
+| `aiChat.budgetPerTask` | `0` | Stop a task at this cost in USD (0 = no limit). |
 | `aiChat.providers` | `[]` | Providers added in the panel (keys live in secret storage, not here). |
 | `aiChat.defaultProvider` | first configured | Provider used when no model is picked. |
 | `aiChat.diffViewMode` | `side-by-side` | How diffs open. |

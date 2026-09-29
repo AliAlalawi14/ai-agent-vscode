@@ -288,7 +288,13 @@ Known constraints:
   (Brave / Tavily / SearXNG).
 - **Inline autocomplete** (`ai-chat-extension/src/completion/`): extension-side, direct to the provider,
   fill-in-the-middle styles plus a chat fallback. For offline use, a small local FIM model (1–3B) is the natural fit.
-- **Next**: the local-model strategy, based on the research questions above.
+- **Verify loop** (0.3.0, `Agent/Services/Verification.cs`): after a run changed files, detected or configured
+  build/test commands run (no shell, time limits); the result is streamed as `verify` events and failures are
+  handed back to the model (at most 2 fix attempts). Answers the most common complaint about AI code: "almost right".
+- **Budget per task** (0.3.0): the loop stops before the next model call once the run's cost reaches the cap.
+- **Offline autocomplete** (0.3.0, `src/completion/local.ts`): one click installs a small FIM model through Ollama,
+  sized by RAM (1.5B on a 16 GB laptop), with a smaller context for local models so suggestions stay fast on a CPU.
+- **Next**: the local-model strategy for the agent itself, based on the research questions above.
 
 ---
 

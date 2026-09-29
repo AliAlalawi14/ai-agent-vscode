@@ -47,6 +47,8 @@
       "acceptedAnswer": { "@type": "Answer", "text": "Stoat brings an agent workflow to regular VS Code: it edits files without stopping, then you Keep or Undo each change. Unlike a subscription editor, you choose the model and use your own key. It also installs in Cursor, Windsurf and VSCodium from Open VSX." } },
     { "@type": "Question", "name": "Does my code leave my machine?",
       "acceptedAnswer": { "@type": "Answer", "text": "Only to the model provider you choose, directly from your machine. Stoat has no server and no telemetry. With a local model, nothing leaves your computer." } },
+    { "@type": "Question", "name": "How is Stoat different from Cursor or Claude Code?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Stoat is a free, open-source VS Code extension that works with any model using your own key, including local models, with no account or subscription. It builds and tests its own changes before handing them back, and you can cap the cost of each task. Cursor and Devin Desktop are their own editors with subscriptions, and Claude Code uses Claude models." } },
     { "@type": "Question", "name": "Does Stoat support MCP servers?",
       "acceptedAnswer": { "@type": "Answer", "text": "Yes. Add servers in Settings, including presets for a Playwright browser, Context7 docs and GitHub, import the ones you use in Cursor, Claude Desktop, Claude Code, Windsurf or VS Code, or add any local or remote MCP server. MCP tools ask before they run unless you trust the server." } },
     { "@type": "Question", "name": "Can I use my Claude Pro or Max subscription?",
@@ -62,6 +64,7 @@
     <a class="brand" href="./"><img src="logo.png" alt="" width="30" height="30">Stoat</a>
     <nav>
       <a href="#features" class="hide-sm">Features</a>
+      <a href="compare.html">Compare</a>
       <a href="#guides">Guides</a>
       <a href="#faq" class="hide-sm">FAQ</a>
       <a href="https://github.com/AliAlalawi14/stoat">GitHub</a>
@@ -92,9 +95,12 @@
       <div class="grid">
         <div class="card"><h3>🔑 Your key, your model</h3><p>Claude, GPT, Gemini, DeepSeek, Mistral, Grok, OpenRouter, Azure, or any OpenAI-compatible API. Pay the provider only for what you use.</p></div>
         <div class="card"><h3>💻 Fully local if you want</h3><p>Run it with Ollama or LM Studio and your code never leaves your machine. No key, no cost.</p></div>
+        <div class="card"><h3>🧪 Checks its own work</h3><p>After editing, Stoat runs your build and tests. If they fail, the agent fixes it before it says "done". You see "✓ Build passed · 12/12 tests".</p></div>
         <div class="card"><h3>✅ Review, don't babysit</h3><p>The agent edits without stopping at every file. When it's done, Keep or Undo each change, each file, or everything.</p></div>
         <div class="card"><h3>🗺️ Plan before building</h3><p>Plan mode asks clarifying questions, then writes an editable Markdown plan that Build follows step by step.</p></div>
         <div class="card"><h3>🛡️ Safe by default</h3><p>Works only inside your open folder, commands wait for approval, secrets are redacted, every change can be undone.</p></div>
+        <div class="card"><h3>💵 Predictable cost</h3><p>No subscription. Cost is shown on every reply, and a budget per task stops the agent before it spends more than you allowed.</p></div>
+        <div class="card"><h3>⌨️ Offline autocomplete</h3><p>One click downloads a small coder model (about 1 GB) that runs on a normal laptop: tab completions that are free, private and work without internet.</p></div>
         <div class="card"><h3>🧩 MCP, web and autocomplete</h3><p>Plug in a browser, GitHub, library docs or any MCP server (or import yours from Cursor and Claude). Read web pages safely, search, and get tab completions from a local or cloud model.</p></div>
         <div class="card"><h3>📦 Nothing to set up</h3><p>The engine ships inside the extension and starts by itself. No Python, no .NET, no Docker. Connect a model in the panel and go.</p></div>
       </div>
@@ -131,6 +137,24 @@
     </div>
   </section>
 
+  <section id="compare">
+    <div class="wrap">
+      <h2>How Stoat compares</h2>
+      <p class="lead">The big tools have more power and their own models. Stoat is free, open, private and model-agnostic,
+        and it checks its own work before handing it back.</p>
+      <div class="scroll"><table class="table">
+        <tr><th></th><th>Stoat</th><th>Cursor</th><th>Claude Code</th><th>Devin Desktop (Windsurf)</th></tr>
+        <tr><td><b>Price</b></td><td>Free; pay your provider</td><td>$20–$200 / month</td><td>$20–$200 / month or API</td><td>$20–$200 / month</td></tr>
+        <tr><td><b>Any model, your key</b></td><td>✅</td><td>❌</td><td>❌ Claude</td><td>❌</td></tr>
+        <tr><td><b>Local / offline</b></td><td>✅</td><td>❌</td><td>Workarounds only</td><td>❌</td></tr>
+        <tr><td><b>Open source</b></td><td>✅ MIT</td><td>❌</td><td>❌</td><td>❌</td></tr>
+        <tr><td><b>Automatic build + tests</b></td><td>✅</td><td>On request</td><td>On request / hooks</td><td>On request</td></tr>
+        <tr><td><b>Background agents</b></td><td>❌</td><td>✅</td><td>✅</td><td>✅</td></tr>
+      </table></div>
+      <p style="margin-top:14px"><a href="compare.html">Full comparison, with sources →</a></p>
+    </div>
+  </section>
+
   <section id="guides">
     <div class="wrap">
       <h2>Guides</h2>
@@ -152,6 +176,7 @@
       <details><summary>Which AI models does Stoat support?</summary><p>Anthropic Claude, OpenAI, Google Gemini, DeepSeek, Mistral, xAI Grok, Groq, OpenRouter, Together, Fireworks, Azure OpenAI, local models through Ollama or LM Studio, and any OpenAI-compatible API. Agent and Plan modes need models that support tool calling.</p></details>
       <details><summary>Is Stoat an alternative to Cursor?</summary><p>Stoat brings an agent workflow to regular VS Code: it edits files without stopping, then you Keep or Undo each change. Unlike a subscription editor, you choose the model and use your own key. It also installs in Cursor, Windsurf and VSCodium from Open VSX.</p></details>
       <details><summary>Does my code leave my machine?</summary><p>Only to the model provider you choose, directly from your machine. Stoat has no server and no telemetry. With a local model, nothing leaves your computer.</p></details>
+      <details><summary>How is Stoat different from Cursor or Claude Code?</summary><p>Stoat is a free, open-source VS Code extension that works with any model using your own key, including local models, with no account or subscription. It builds and tests its own changes before handing them back, and you can cap the cost of each task. Cursor and Devin Desktop are their own editors with subscriptions, and Claude Code uses Claude models. See the <a href="compare.html">full comparison</a>.</p></details>
       <details><summary>Does Stoat support MCP servers?</summary><p>Yes. Add servers in Settings → MCP servers (presets for a Playwright browser, Context7 docs and GitHub), import the ones you use in Cursor, Claude Desktop, Claude Code, Windsurf or VS Code, or add any local or remote server. MCP tools ask before they run unless you trust the server.</p></details>
       <details><summary>Can I use my Claude Pro or Max subscription?</summary><p>No. Anthropic allows subscription logins only in Claude.ai and Claude Code. Other tools, including Stoat, need an API key from console.anthropic.com or Claude through AWS Bedrock, Google Vertex or Microsoft Foundry.</p></details>
     </div>

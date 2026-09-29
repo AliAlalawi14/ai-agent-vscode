@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.3.0: checks its own work, predictable cost, offline autocomplete
+
+### Added
+- **Verify loop**: after the agent changed files, the project's build and tests run automatically, then:
+  - the result appears in the review bar ("✓ Build passed · 12/12 tests passed") and as a card per attempt;
+  - failures go back to the agent with the output, and it fixes them (up to 2 attempts).
+
+  Commands are detected (dotnet, npm/pnpm/yarn/bun, cargo, go, Maven, Gradle, pytest) or configured; checks run in
+  trusted workspaces only.
+- **Budget per task**: stops before the next model call once a task reaches your cost cap, and offers Continue.
+- **Offline autocomplete in one click**: Settings → Autocomplete → Run on this computer:
+  - checks Ollama and downloads the small coder model that fits your machine (qwen2.5-coder 1.5B, about 1 GB, on a
+    normal laptop);
+  - turns autocomplete on and times a first suggestion.
+- The agent may run the project's detected test/build commands (npm test, cargo test, go test…), still with approval.
+- Website: [comparison with Cursor, Claude Code and Devin Desktop](https://alialalawi14.github.io/stoat/compare.html).
+
+### Changed
+- Backend protocol 7.
+
 ## 0.2.0: MCP, web and autocomplete
 
 ### Added

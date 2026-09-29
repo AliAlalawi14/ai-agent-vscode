@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stoat vs Cursor, Claude Code and Devin Desktop (Windsurf): AI Coding Agents Compared | Stoat</title>
+<meta name="description" content="An honest comparison of Stoat, Cursor, Claude Code and Devin Desktop (formerly Windsurf): price, models, local/offline use, open source, autocomplete, MCP, safety and how each checks its own work.">
+<link rel="canonical" href="https://alialalawi14.github.io/stoat/compare.html">
+<link rel="icon" type="image/png" href="logo.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Stoat">
+<meta property="og:title" content="Stoat vs Cursor, Claude Code and Devin Desktop">
+<meta property="og:description" content="Price, models, offline use, open source, autocomplete, MCP, safety: how an open, bring-your-own-model agent compares with the big ones.">
+<meta property="og:url" content="https://alialalawi14.github.io/stoat/compare.html">
+<meta property="og:image" content="https://alialalawi14.github.io/stoat/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .compare th:first-child, .compare td:first-child { color: var(--muted); font-weight: 600; white-space: nowrap; }
+  .compare th.us, .compare td.us { background: rgba(45, 212, 191, .07); }
+  .compare th.us { color: var(--accent); }
+  .compare td { min-width: 150px; }
+  .yes { color: var(--good); font-weight: 600; }
+  .no { color: var(--bad); font-weight: 600; }
+  .meh { color: #fbbf24; font-weight: 600; }
+  .stat { font-size: 34px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .sources li { font-size: 14px; color: var(--muted); }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Stoat vs Cursor, Claude Code and Devin Desktop (Windsurf)",
+  "description": "An honest comparison of AI coding agents: price, models, local/offline use, open source, autocomplete, MCP, safety and verification.",
+  "url": "https://alialalawi14.github.io/stoat/compare.html",
+  "image": "https://alialalawi14.github.io/stoat/og.png",
+  "dateModified": "2026-09-29",
+  "author": { "@type": "Organization", "name": "Stoat" }
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="logo.png" alt="" width="30" height="30">Stoat</a>
+    <nav>
+      <a href="./#features" class="hide-sm">Features</a>
+      <a href="compare.html">Compare</a>
+      <a href="./#guides">Guides</a>
+      <a href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="article" style="max-width: var(--max)">
+    <p class="crumbs"><a href="./">Stoat</a> › Compare</p>
+    <h1>Stoat vs Cursor, Claude Code and Devin Desktop</h1>
+    <p>Stoat is small next to these tools, and some things (a custom-trained autocomplete model, cloud agents that
+      run while you sleep) need money and infrastructure that a small open project doesn't have. What Stoat can offer
+      is different: free and open, any model including local ones, predictable cost, and the safest way to let an
+      agent touch your code. Here is how they compare, as honestly as we can.</p>
+    <p class="small">Checked in September 2026. Prices and features change often; follow the sources at the bottom for
+      the current details. Windsurf was renamed <strong>Devin Desktop</strong> by Cognition on June 2, 2026.</p>
+
+    <h2>What developers struggle with, and Stoat's answer</h2>
+    <div class="grid" style="margin-bottom: 18px">
+      <div class="card"><div class="stat">66%</div><p>say their biggest frustration is AI output that is "almost right, but not quite".</p></div>
+      <div class="card"><div class="stat">45%</div><p>say debugging AI-generated code takes more time.</p></div>
+      <div class="card"><div class="stat">46%</div><p>actively distrust the accuracy of AI tools; only 3% highly trust it.</p></div>
+    </div>
+    <p class="small">Stack Overflow Developer Survey 2025.</p>
+
+    <div class="scroll"><table class="table">
+      <tr><th>Problem</th><th>What Stoat does about it</th></tr>
+      <tr><td><b>"Almost right" code</b></td><td><b>Verify loop</b>: after the agent edits, it runs your build and tests automatically. If they fail, the agent sees the output and fixes it before it hands back. The review bar shows the result: "✓ Build passed · 12/12 tests passed".</td></tr>
+      <tr><td><b>Low trust</b></td><td>You <b>Keep or Undo every change</b> (undo never overwrites your later edits). Commands wait for approval, run without a shell from an allow-list, secrets are redacted, and there's an audit log. The source is open, so you can read exactly what it does.</td></tr>
+      <tr><td><b>Surprise bills</b></td><td>No subscription: you pay your model provider directly. Cost is shown on every reply, and a <b>budget per task</b> stops the agent before it spends more than you allowed.</td></tr>
+      <tr><td><b>Lock-in</b></td><td>Any provider with your own key: Claude, GPT, Gemini, DeepSeek, Mistral, Grok, OpenRouter, Azure, any OpenAI-compatible API. Switch model per message.</td></tr>
+      <tr><td><b>Privacy</b></td><td>No account, no telemetry, no Stoat server. Run fully local with Ollama or LM Studio, including <b>offline autocomplete on a normal laptop</b>.</td></tr>
+    </table></div>
+
+    <h2>Side by side</h2>
+    <div class="scroll"><table class="table compare">
+      <tr><th></th><th class="us">Stoat</th><th>Cursor</th><th>Claude Code</th><th>Devin Desktop (Windsurf)</th></tr>
+      <tr><td>Form</td><td class="us">VS Code extension (also Cursor, Windsurf, VSCodium)</td><td>Own editor (VS Code fork)</td><td>Terminal CLI + IDE extensions</td><td>Own editor (VS Code fork)</td></tr>
+      <tr><td>Price</td><td class="us"><span class="yes">Free</span>; you pay your provider per use (or nothing, locally)</td><td>Free tier; $20 Pro, $60 Pro+, $200 Ultra per month; usage beyond the plan billed extra</td><td>Claude Pro $20, Max $100–$200 per month (shared 5-hour and weekly limits), or API</td><td>Free tier; $20 Pro, $200 Max per month, with quotas</td></tr>
+      <tr><td>Models</td><td class="us"><span class="yes">Any provider, your key</span></td><td>Their selection of frontier models + own models</td><td>Claude</td><td>Own models + others</td></tr>
+      <tr><td>Local / offline</td><td class="us"><span class="yes">✅</span> Ollama, LM Studio, any local server</td><td><span class="no">❌</span></td><td><span class="meh">Unofficial workarounds</span></td><td><span class="no">❌</span></td></tr>
+      <tr><td>Open source</td><td class="us"><span class="yes">✅ MIT</span></td><td><span class="no">❌</span></td><td><span class="no">❌</span></td><td><span class="no">❌</span></td></tr>
+      <tr><td>Account / telemetry</td><td class="us"><span class="yes">None</span></td><td>Account required</td><td>Account required</td><td>Account required</td></tr>
+      <tr><td>Tab autocomplete</td><td class="us"><span class="yes">✅</span> ghost text from your model, or <b>offline</b> with a small local model</td><td><span class="yes">✅</span> best in class (next-edit prediction)</td><td><span class="no">❌</span></td><td><span class="yes">✅</span></td></tr>
+      <tr><td>MCP servers</td><td class="us"><span class="yes">✅</span> presets + import from Cursor / Claude / VS Code</td><td><span class="yes">✅</span></td><td><span class="yes">✅</span></td><td><span class="yes">✅</span></td></tr>
+      <tr><td>Web search / fetch</td><td class="us"><span class="yes">✅</span> fetch with local-network protection; search via Brave, Tavily or SearXNG</td><td><span class="yes">✅</span></td><td><span class="yes">✅</span></td><td><span class="yes">✅</span></td></tr>
+      <tr><td>Checks its own work</td><td class="us"><span class="yes">✅ Automatic</span> build + tests after every change; failures fixed; result in the review</td><td>Agent can run tests when it decides to</td><td>Agent can run tests; hooks can automate</td><td>Agent can run tests when it decides to</td></tr>
+      <tr><td>Reviewing changes</td><td class="us">Keep / Undo per edit, per file or all; exact undo</td><td>Review and checkpoints</td><td>Permission prompts, diffs</td><td>Review and approvals</td></tr>
+      <tr><td>Cost control</td><td class="us">Cost per reply + <b>budget per task</b></td><td>Plan credits, spend limits</td><td>Plan limits</td><td>Plan quotas</td></tr>
+      <tr><td>Background / parallel agents</td><td class="us"><span class="no">❌</span></td><td><span class="yes">✅</span></td><td><span class="yes">✅</span> subagents</td><td><span class="yes">✅</span> local and cloud agents</td></tr>
+      <tr><td>Safety model</td><td class="us">Workspace-only files, no shell, allow-listed commands, secret redaction, audit log</td><td>Approvals, checkpoints</td><td>Permission prompts, hooks</td><td>Approvals</td></tr>
+      <tr><td>Codebase understanding</td><td class="us">Code map + optional semantic search</td><td>Indexing</td><td>Reads on demand</td><td>Indexing, Codemaps</td></tr>
+      <tr><td>Quality measured</td><td class="us">Public eval gate: 26 real tasks, 3 runs each</td><td>Internal</td><td>Internal</td><td>Internal</td></tr>
+    </table></div>
+
+    <h2>Where the big tools are ahead</h2>
+    <ul>
+      <li><b>Cursor's Tab</b> predicts your next edit anywhere in the file with its own trained models; Stoat's autocomplete is classic ghost text.</li>
+      <li><b>Background and cloud agents</b> that keep working on several tasks in parallel, or while your laptop is closed.</li>
+      <li><b>Their own models</b>, tuned for their product, and a polished, funded team behind them.</li>
+    </ul>
+
+    <h2>Choose Stoat if…</h2>
+    <ul>
+      <li>you want to <b>keep VS Code</b> and use <b>the model you choose</b>, including local ones;</li>
+      <li>you want the agent to <b>prove its changes build and pass tests</b> before it says "done";</li>
+      <li>you want <b>no subscription, no account and predictable cost</b>;</li>
+      <li>your code must <b>stay on your machine</b>;</li>
+      <li>you want to <b>read the source</b> of the tool that edits your code.</li>
+    </ul>
+
+    <div class="cta">
+      <p><strong>Small agent. Takes on the big ones.</strong> Free and open source.</p>
+      <div class="buttons">
+        <a class="btn primary" href="https://marketplace.visualstudio.com/items?itemName=AliAlalawi14.stoat">Install for VS Code</a>
+        <a class="btn" href="https://open-vsx.org/extension/AliAlalawi14/stoat">Open VSX</a>
+        <a class="btn" href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+      </div>
+    </div>
+
+    <h2>Sources</h2>
+    <ul class="sources">
+      <li><a href="https://survey.stackoverflow.co/2025/ai">Stack Overflow Developer Survey 2025: AI</a></li>
+      <li><a href="https://cursor.com/pricing">Cursor pricing</a></li>
+      <li><a href="https://claude.com/pricing">Claude plans and pricing</a></li>
+      <li><a href="https://devin.ai/pricing">Devin plans and pricing</a> · <a href="https://devin.ai/blog/windsurf-is-now-devin-desktop">Windsurf is now Devin Desktop</a></li>
+    </ul>
+    <p class="small">Something here out of date or wrong? <a href="https://github.com/AliAlalawi14/stoat/issues">Open an issue</a> and we'll fix it.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Stoat · MIT license</span>
+    <a href="https://github.com/AliAlalawi14/stoat">GitHub</a>
+    <a href="https://github.com/AliAlalawi14/stoat/issues">Report a bug</a>
+    <a href="https://github.com/AliAlalawi14/stoat/blob/main/SECURITY.md">Security</a>
+  </div>
+</footer>
+</body>
+</html>
