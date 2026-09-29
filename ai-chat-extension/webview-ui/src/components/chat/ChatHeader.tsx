@@ -34,7 +34,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
             <MessageSquare size={11} className="text-accent" />
           </div>
           <span className="text-[12px] font-semibold text-text-primary tracking-tight">
-            AI Chat
+            Stoat
           </span>
           {activeId && (
             <span className="text-[10px] text-text-muted ml-1">

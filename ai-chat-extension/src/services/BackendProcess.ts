@@ -10,7 +10,7 @@ import { providerSecretKey, type ProviderEntry } from "./providerPresets";
 export const PROVIDER_KEYS = [
   { id: "deepseek", label: "DeepSeek", secret: "aiChat.key.deepseek", env: "DeepSeek__ApiKey" },
   { id: "anthropic", label: "Anthropic (Claude)", secret: "aiChat.key.anthropic", env: "Anthropic__ApiKey" },
-] as const;   // every other provider (Gemini, OpenAI, Mistral, Ollama...) is added with "AI Agent: Add Provider"
+] as const;   // every other provider (Gemini, OpenAI, Mistral, Ollama...) is added with "Stoat: Add Provider"
 
 /** Where the backend is and how to authenticate; either the managed process or an external URL from settings. */
 export interface BackendConnection {
@@ -27,7 +27,7 @@ export class BackendProcess implements vscode.Disposable {
   private process: cp.ChildProcess | null = null;
   private connection: BackendConnection | null = null;
   private starting: Promise<BackendConnection | null> | null = null;
-  private readonly output = vscode.window.createOutputChannel("AI Agent Backend");
+  private readonly output = vscode.window.createOutputChannel("Stoat Backend");
   private readonly started = new vscode.EventEmitter<void>();
   /** Fires when a (re)start succeeded, so open chat panels refresh their status and model list. */
   readonly onDidStart = this.started.event;
@@ -95,6 +95,11 @@ export class BackendProcess implements vscode.Disposable {
         "or point 'aiChat.backendUrl' at a backend you run yourself.";
       this.output.appendLine(this.lastProblem);
       return null;
+    }
+
+    // macOS/Linux: a VSIX packed on Windows (or unpacked without modes) leaves the binary non-executable
+    if (process.platform !== "win32") {
+      try { fs.chmodSync(exe, 0o755); } catch { /* read-only install: spawn reports the real error */ }
     }
 
     const env = await this.environment();
@@ -193,13 +198,13 @@ export class BackendProcess implements vscode.Disposable {
       anyKey = true;
     }
 
-    // Providers added with "AI Agent: Add Provider" (Gemini, Mistral, Azure, Ollama...): Providers__Custom__N__*
+    // Providers added with "Stoat: Add Provider" (Gemini, Mistral, Azure, Ollama...): Providers__Custom__N__*
     const providers = vscode.workspace.getConfiguration("aiChat").get<ProviderEntry[]>("providers", []) ?? [];
     let index = 0;
     for (const provider of providers) {
       const key = provider.auth === "none" ? undefined : await this.context.secrets.get(providerSecretKey(provider.name));
       if (provider.auth !== "none" && !key) {
-        this.output.appendLine(`Skipping provider '${provider.name}': its key is missing (run 'AI Agent: Add Provider' again).`);
+        this.output.appendLine(`Skipping provider '${provider.name}': its key is missing (run 'Stoat: Add Provider' again).`);
         continue;
       }
       const prefix = `Providers__Custom__${index++}__`;

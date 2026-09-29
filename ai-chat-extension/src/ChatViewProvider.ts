@@ -71,7 +71,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' http://localhost:5173 'unsafe-eval'; style-src 'unsafe-inline' http://localhost:5173; connect-src http://localhost:5036 ws://localhost:5173 http://localhost:5173; font-src http://localhost:5173;">
-  <title>AI Chat</title>
+  <title>Stoat</title>
   <script type="module">
     import RefreshRuntime from 'http://localhost:5173/@react-refresh'
     RefreshRuntime.injectIntoGlobalHook(window)
@@ -116,7 +116,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   <!-- style-src 'unsafe-inline': mermaid diagrams in plans carry their own <style> inside the SVG -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' ${webview.cspSource}; style-src 'unsafe-inline' ${webview.cspSource}; connect-src http://localhost:5036;">
   <link href="${styleUri}" rel="stylesheet">
-  <title>AI Chat</title>
+  <title>Stoat</title>
 </head>
 <body style="padding: 0; margin: 0;">
   <div id="root"></div>

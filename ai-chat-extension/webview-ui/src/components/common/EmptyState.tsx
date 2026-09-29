@@ -41,7 +41,7 @@ export const EmptyState: React.FC<SuggestionChipsProps> = ({ onSelect }) => {
           <Sparkles size={22} className="text-accent" />
         </div>
         <h2 className="text-[16px] font-semibold text-text-primary mb-1">
-          AI Coding Assistant
+          Stoat
         </h2>
         <p className="text-[12px] text-text-muted max-w-[280px] leading-relaxed">
           Ask me to explain, refactor, debug, or build anything in your codebase.

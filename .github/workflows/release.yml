@@ -1,0 +1,106 @@
+# Builds Stoat for every platform and, for a version tag (v0.1.0...), publishes it to the
+# VS Code Marketplace, Open VSX and a GitHub Release.
+#
+# One-time setup (repo Settings → Secrets and variables → Actions):
+#   VSCE_PAT  Azure DevOps personal access token with the "Marketplace (Manage)" scope
+#   OVSX_PAT  open-vsx.org access token (after `npx ovsx create-namespace AliAlalawi14`)
+#
+# Release: bump "version" in ai-chat-extension/package.json, commit, then
+#   git tag v0.1.0 && git push origin v0.1.0
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:   # build only: the VSIX files are attached to the run as artifacts
+
+permissions:
+  contents: write   # create the GitHub Release
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - run: dotnet test Ai-Agent
+
+  build:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, rid: win-x64,     target: win32-x64 }
+          - { os: ubuntu-latest, rid: linux-x64,   target: linux-x64 }
+          - { os: ubuntu-latest, rid: linux-arm64, target: linux-arm64 }
+          # macOS builds run on a Mac: Apple Silicon only runs signed binaries, and the SDK
+          # signs the backend's executable (ad hoc) only when it is built on macOS.
+          - { os: macos-latest,  rid: osx-arm64,   target: darwin-arm64 }
+          - { os: macos-latest,  rid: osx-x64,     target: darwin-x64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            ai-chat-extension/package-lock.json
+            ai-chat-extension/webview-ui/package-lock.json
+
+      - name: Bundle the backend (${{ matrix.rid }})
+        run: bash scripts/publish-backend.sh ${{ matrix.rid }}
+
+      - name: Install extension dependencies
+        working-directory: ai-chat-extension
+        run: |
+          npm ci
+          npm ci --prefix webview-ui
+
+      - name: Package the VSIX (${{ matrix.target }})
+        working-directory: ai-chat-extension
+        run: npx @vscode/vsce package --target ${{ matrix.target }} -o stoat-${{ matrix.target }}.vsix
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stoat-${{ matrix.target }}
+          path: ai-chat-extension/stoat-${{ matrix.target }}.vsix
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to the VS Code Marketplace
+        run: npx @vscode/vsce publish --packagePath dist/*.vsix
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: Publish to Open VSX (Cursor, Windsurf, VSCodium)
+        run: |
+          for f in dist/*.vsix; do
+            npx ovsx publish "$f" -p "$OVSX_PAT"
+          done
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.vsix
+          generate_release_notes: true

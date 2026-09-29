@@ -1,6 +1,28 @@
 # Changelog
 
-## Unreleased
+## 0.1.0: first public release as **Stoat**
+
+### Added
+- **Set up models in the chat panel**: first run shows a "Connect a model" card (provider, key with a *Get a key*
+  link, models read live, Save & connect); the same form in Settings, with the provider list and the backend's
+  real address, Restart and Show log.
+- **Review edits after they're applied** (Cursor-style, `aiChat.reviewEdits`, on by default): Agent and Auto
+  edit without stopping; a review bar lists every changed file with Keep / Undo per file and Keep all / Undo all,
+  and each change card has Keep / Undo. Commands still ask first. Backend protocol 5 (`reviewEdits`).
+- Builds for Windows, macOS (Apple Silicon and Intel) and Linux (x64, arm64), published to the VS Code
+  Marketplace and Open VSX by `.github/workflows/release.yml`.
+
+### Fixed
+- The chat no longer hangs on "Thinking..." when no provider is set up (backend start waited on a notification).
+- **Stop** ends the run at once and actually stops the agent; a stopped run no longer leaks into the next reply
+  or breaks Stop for it.
+- The bundled backend is made executable before it starts on macOS/Linux.
+
+### Changed
+- Renamed to **Stoat** (extension id `AliAlalawi14.stoat`). Keys saved by the old "AI Agent" build must be entered once more.
+- EF Core / ASP.NET Core OpenApi 10.0.12 (clears two high-severity advisories).
+
+## Earlier (unreleased builds)
 
 ### Added: any model provider
 - **AI Agent: Add Provider**: Gemini, OpenAI, Mistral, xAI, Groq, OpenRouter, Together, Fireworks, Azure OpenAI,

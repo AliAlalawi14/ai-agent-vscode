@@ -6,7 +6,7 @@ import { setBackendProcess } from './services/backendConnection';
 import { registerProviderCommands } from './services/providerCommands';
 
 export function activate(context: vscode.ExtensionContext): void {
-  console.log('AI Chat Extension is now active!');
+  console.log('Stoat is now active');
   recordLoadedBundles(context.extensionPath);
 
   // Zero-config: this window's backend (started on first use unless aiChat.backendUrl points elsewhere)
@@ -35,7 +35,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
       if (!BackendProcess.isExternal()) {
         const connection = await backend.restart();
-        if (connection) { vscode.window.showInformationMessage(`AI Agent: ${pick.provider.label} key saved; backend restarted.`); }
+        if (connection) { vscode.window.showInformationMessage(`Stoat: ${pick.provider.label} key saved; backend restarted.`); }
       }
     }),
     ...registerProviderCommands(context, backend),
@@ -107,5 +107,5 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 export function deactivate(): void {
-  console.log('AI Chat Extension is deactivated');
+  console.log('Stoat is deactivated');
 }

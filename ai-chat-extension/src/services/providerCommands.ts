@@ -4,8 +4,8 @@ import { PROVIDER_PRESETS, listModels, providerSecretKey } from "./providerPrese
 import { RESERVED_NAMES, readProviders, removeProvider, uniqueName, writeProviders } from "./providerSetup";
 
 /**
- * "AI Agent: Add Provider": preset (or custom URL) → key (secret storage) → models, read live from the provider.
- * "AI Agent: Remove Provider". Both restart the built-in backend so the model picker updates.
+ * "Stoat: Add Provider": preset (or custom URL) → key (secret storage) → models, read live from the provider.
+ * "Stoat: Remove Provider". Both restart the built-in backend so the model picker updates.
  */
 export function registerProviderCommands(context: vscode.ExtensionContext, backend: BackendProcess): vscode.Disposable[] {
   const restart = async () => {
@@ -107,7 +107,7 @@ export function registerProviderCommands(context: vscode.ExtensionContext, backe
       models = (typed ?? "").split(",").map((m) => m.trim()).filter((m) => m.length > 0);
     }
     if (models.length === 0) {
-      vscode.window.showWarningMessage("AI Agent: no model picked, so the provider wasn't added.");
+      vscode.window.showWarningMessage("Stoat: no model picked, so the provider wasn't added.");
       return;
     }
 
@@ -119,13 +119,13 @@ export function registerProviderCommands(context: vscode.ExtensionContext, backe
       { name: name.trim(), baseUrl, auth, models, ...(pick.preset?.id === "openai" ? { useMaxCompletionTokens: true } : {}) },
     ]);
     await restart();
-    vscode.window.showInformationMessage(`AI Agent: added ${pick.label} (${models.length} model${models.length === 1 ? "" : "s"}). Pick it in the chat's model menu.`);
+    vscode.window.showInformationMessage(`Stoat: added ${pick.label} (${models.length} model${models.length === 1 ? "" : "s"}). Pick it in the chat's model menu.`);
   });
 
   const remove = vscode.commands.registerCommand("aiChat.removeProvider", async () => {
     const providers = readProviders();
     if (providers.length === 0) {
-      vscode.window.showInformationMessage("AI Agent: no providers added with 'Add Provider' yet.");
+      vscode.window.showInformationMessage("Stoat: no providers added with 'Add Provider' yet.");
       return;
     }
     const pick = await vscode.window.showQuickPick(

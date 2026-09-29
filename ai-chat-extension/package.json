@@ -1,8 +1,8 @@
 {
-  "name": "ai-chat-extension",
-  "displayName": "AI Agent",
-  "description": "A coding agent that plans with you, makes changes you approve, and manages which AI model does what.",
-  "version": "0.0.3",
+  "name": "stoat",
+  "displayName": "Stoat – AI Coding Agent",
+  "description": "Small agent, takes on the big ones. An open-source AI coding agent for VS Code: plans with you, edits your code, and lets you Keep or Undo every change. Works with Claude, GPT, Gemini, DeepSeek, Ollama or any OpenAI-compatible model, using your own key.",
+  "version": "0.1.0",
   "icon": "resources/logo.png",
   "galleryBanner": {
     "color": "#4F46E5",
@@ -12,7 +12,30 @@
     "vscode": "^1.120.0"
   },
   "categories": [
+    "AI",
+    "Chat",
+    "Programming Languages",
     "Other"
+  ],
+  "keywords": [
+    "ai",
+    "agent",
+    "coding agent",
+    "ai agent",
+    "copilot",
+    "cursor",
+    "claude",
+    "gpt",
+    "openai",
+    "gemini",
+    "deepseek",
+    "ollama",
+    "local llm",
+    "llm",
+    "code review",
+    "refactor",
+    "chat",
+    "byok"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
@@ -21,7 +44,7 @@
       "activitybar": [
         {
           "id": "ai-chat-sidebar-container",
-          "title": "AI Assistant",
+          "title": "Stoat",
           "icon": "resources/icon.svg"
         }
       ]
@@ -39,35 +62,35 @@
     "commands": [
       {
         "command": "aiChat.openSidebar",
-        "title": "AI Chat: Open Sidebar"
+        "title": "Stoat: Open Sidebar"
       },
       {
         "command": "aiChat.newChat",
-        "title": "AI Chat: New Conversation"
+        "title": "Stoat: New Conversation"
       },
       {
         "command": "aiChat.askAboutSelection",
-        "title": "AI Chat: Ask About Selection"
+        "title": "Stoat: Ask About Selection"
       },
       {
         "command": "aiChat.setApiKey",
-        "title": "AI Agent: Set API Key"
+        "title": "Stoat: Set API Key"
       },
       {
         "command": "aiChat.restartBackend",
-        "title": "AI Agent: Restart Backend"
+        "title": "Stoat: Restart Backend"
       },
       {
         "command": "aiChat.showBackendLog",
-        "title": "AI Agent: Show Backend Log"
+        "title": "Stoat: Show Backend Log"
       },
       {
         "command": "aiChat.addProvider",
-        "title": "AI Agent: Add Provider (Gemini, OpenAI, Mistral, Ollama…)"
+        "title": "Stoat: Add Provider (Gemini, OpenAI, Mistral, Ollama…)"
       },
       {
         "command": "aiChat.removeProvider",
-        "title": "AI Agent: Remove Provider"
+        "title": "Stoat: Remove Provider"
       }
     ],
     "keybindings": [
@@ -93,7 +116,7 @@
       ]
     },
     "configuration": {
-      "title": "AI Chat",
+      "title": "Stoat",
       "properties": {
         "aiChat.reviewEdits": {
           "type": "boolean",

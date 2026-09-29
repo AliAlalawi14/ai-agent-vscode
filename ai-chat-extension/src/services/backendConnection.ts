@@ -19,7 +19,7 @@ export function getBackendProcess(): BackendProcess | null {
 export async function backendConnection(): Promise<BackendConnection> {
   const connection = await backend?.ensureStarted();
   if (!connection) {
-    throw new Error(backend?.lastProblem ?? "The AI Agent backend is not running. Open the backend log for the reason.");
+    throw new Error(backend?.lastProblem ?? "The Stoat backend is not running. Open the backend log for the reason.");
   }
   return connection;
 }
