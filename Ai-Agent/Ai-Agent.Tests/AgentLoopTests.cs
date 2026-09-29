@@ -117,10 +117,12 @@ namespace Ai_Agent.Tests
         public static List<string> Prompts(List<string> events) =>
             events.Where(e => e.StartsWith("[APPROVAL_EVENT]") && !e.Contains("\"decision\"") && !e.Contains("\"autoApproved\"")).ToList();
 
-        public async Task<List<string>> RunAsync(string task, string mode, bool approve = false, bool reviewEdits = false)
+        public async Task<List<string>> RunAsync(string task, string mode, bool approve = false, bool reviewEdits = false,
+            bool verify = false, double budgetUsd = 0)
         {
             var events = new List<string>();
-            await foreach (var chunk in Agent.RunStreamAsync(task, Workspace.Root, mode: mode, reviewEdits: reviewEdits))
+            await foreach (var chunk in Agent.RunStreamAsync(task, Workspace.Root, mode: mode, reviewEdits: reviewEdits,
+                               verify: verify, budgetUsd: budgetUsd))
             {
                 events.Add(chunk);
                 if (chunk.StartsWith("[APPROVAL_EVENT]") && !chunk.Contains("\"decision\"") && !chunk.Contains("\"autoApproved\""))

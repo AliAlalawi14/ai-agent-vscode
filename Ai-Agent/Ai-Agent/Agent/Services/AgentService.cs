@@ -27,6 +27,7 @@ namespace Ai_Agent.Agent.Services
         private readonly ConversationMemoryService _memoryService;
         private readonly ApprovalBroker _approvals;
         private readonly Mcp.McpConnectionManager? _mcp;
+        private readonly VerifyRunner _verifier = new();
         private readonly AuditLog _audit;
         private readonly ProjectContextService _projectContext;
         private readonly CodeVectorIndexer _vectorIndexer;
@@ -105,7 +106,9 @@ namespace Ai_Agent.Agent.Services
             string? mode = null,
             ActivePlan? activePlan = null,
             string? planPath = null,
-            bool reviewEdits = false)
+            bool reviewEdits = false,
+            bool verify = false,
+            double budgetUsd = 0)
         {
             var correlationId = GetCorrelationId();
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -153,6 +156,8 @@ namespace Ai_Agent.Agent.Services
             const int MaxConsecutiveCommandFailures = 3;
             var resolvedModel = await ResolveModelAsync(model);
             var changedFiles = new List<string>();
+            var verifiedChanges = 0;   // changes (not files: a fix may edit the same file again) already checked
+            var verifyAttempt = 0;
 
             _logger.LogInformation(
                 "[TRACE] CONTEXT | Corr={Corr} | History={HistoryCount} msgs | EditorContext={ContextCount} items | Model={Model}",
@@ -184,6 +189,22 @@ namespace Ai_Agent.Agent.Services
                     _logger.LogInformation("[TRACE] CANCELLED | Corr={Corr} | before step #{Iter}", correlationId, iteration);
                     await SaveMemoryAsync(userRequest, "(cancelled by the user)", success: false, iteration, changedFiles, workspaceRoot, sessionId);
                     yield break;
+                }
+
+                // Budget cap: stop before the next model call once this task has cost what the user allowed
+                if (budgetUsd > 0 && iteration > 1)
+                {
+                    var spent = _costTracker.CalculateCost(resolvedModel ?? _llmClient.DefaultModel, stats.InputTokens, stats.OutputTokens, stats.CacheHitTokens).TotalCost;
+                    if (spent >= budgetUsd)
+                    {
+                        stopwatch.Stop();
+                        _logger.LogInformation("[TRACE] BUDGET | Corr={Corr} | spent {Spent:F4} of {Budget:F4} USD", correlationId, spent, budgetUsd);
+                        await SaveMemoryAsync(userRequest, "(stopped at the budget)", success: false, iteration - 1, changedFiles, workspaceRoot, sessionId);
+                        yield return RunSummary(correlationId, mode, resolvedModel, iteration - 1, stats, stopwatch.ElapsedMilliseconds, "budget");
+                        yield return $"[LIMIT_EVENT]{JsonSerializer.Serialize(new { steps = iteration - 1, mode, reason = "budget", spent = Math.Round(spent, 4), budget = budgetUsd })}[/LIMIT_EVENT]";
+                        yield return $"\n\n_Stopped: this task reached its ${budgetUsd:0.00##} budget (${spent:0.000#} spent)._";
+                        yield break;
+                    }
                 }
 
                 // Long runs: keep the conversation inside the context window (tool-call pairs stay intact)
@@ -637,6 +658,65 @@ namespace Ai_Agent.Agent.Services
                 }
                 else
                 {
+                    // ── VERIFY LOOP: the agent changed files, so build and test before calling it done ──
+                    if (verify && mode is AgentModes.Agent or AgentModes.Auto &&
+                        changeSequence > verifiedChanges && !requestAborted.IsCancellationRequested)
+                    {
+                        verifiedChanges = changeSequence;
+                        var commands = ProjectCommands.Detect(workspaceRoot, _options.Value.VerifyCommands);
+                        if (commands.Count == 0)
+                        {
+                            yield return VerifyEvent(new { status = "unavailable", attempt = verifyAttempt,
+                                reason = "No build or test command found for this project. Set one in Settings → Verify." });
+                        }
+                        else
+                        {
+                            verifyAttempt++;
+                            yield return VerifyEvent(new { status = "running", attempt = verifyAttempt,
+                                steps = commands.Select(c => new { kind = c.Kind, command = c.Display }) });
+
+                            VerifyResult? result = null;
+                            try { result = await _verifier.RunAsync(workspaceRoot, commands, requestAborted); }
+                            catch (OperationCanceledException) { /* Stop pressed while building or testing */ }
+                            if (result == null)
+                            {
+                                await SaveMemoryAsync(userRequest, "(cancelled during verification)", success: false, iteration, changedFiles, workspaceRoot, sessionId);
+                                yield break;
+                            }
+
+                            _logger.LogInformation("[TRACE] VERIFY | Corr={Corr} | attempt {Attempt} | {Outcome} | {Summary}",
+                                correlationId, verifyAttempt, result.Passed ? "passed" : "failed", string.Join("; ", result.Steps.Select(s => s.Summary)));
+                            yield return VerifyEvent(new
+                            {
+                                status = result.Passed ? "passed" : "failed",
+                                attempt = verifyAttempt,
+                                steps = result.Steps.Select(s => new
+                                {
+                                    kind = s.Kind, command = s.Command, ok = s.Ok, exitCode = s.ExitCode, durationMs = s.DurationMs,
+                                    summary = s.Summary, output = s.Ok ? "" : s.OutputTail, skipped = s.Skipped, timedOut = s.TimedOut,
+                                    tests = s.Tests == null ? null : new { passed = s.Tests.Passed, failed = s.Tests.Failed, skipped = s.Tests.Skipped, total = s.Tests.Total }
+                                }),
+                                willFix = !result.Passed && verifyAttempt <= _options.Value.MaxVerifyFixes && iteration < maxIterations
+                            });
+
+                            // Failed: the model sees the output and fixes it (bounded), then the loop verifies again
+                            if (!result.Passed && verifyAttempt <= _options.Value.MaxVerifyFixes && iteration < maxIterations)
+                            {
+                                var failed = result.Steps.First(s => !s.Ok && !s.Skipped);
+                                messages.Add(new ChatMessage { Role = "assistant", Content = fullContent.ToString() });
+                                messages.Add(new ChatMessage
+                                {
+                                    Role = "user",
+                                    Content = $"(Automatic check after your changes) `{failed.Command}` failed: {failed.Summary}.\n```\n{failed.OutputTail}\n```\n" +
+                                              "Fix the cause in the code (change a test only if the test itself is wrong). If this failure has " +
+                                              "nothing to do with your change, don't change more code: say so in one or two sentences."
+                                });
+                                yield return "\n\n";
+                                continue;
+                            }
+                        }
+                    }
+
                     stopwatch.Stop();
                     _logger.LogInformation(
                         "[TRACE] EXIT RunStreamAsync | Corr={Corr} | SUCCESS | Iterations={Iter} | SessionId={SessionId} | Duration={DurationMs}ms",
@@ -729,6 +809,7 @@ namespace Ai_Agent.Agent.Services
                 cacheHitTokens = stats.CacheHitTokens,
                 promptBuildMs = stats.PromptBuildMs,
                 cost = Math.Round(cost.TotalCost, 6),
+                priced = _costTracker.HasPricing(modelName),
                 latencyMs = durationMs,
                 steps,
                 toolCalls = stats.ToolCalls,
@@ -739,6 +820,8 @@ namespace Ai_Agent.Agent.Services
             _ = _audit.RunAsync(new { correlationId, mode, metricsEvent });
             return $"[METRICS_EVENT]{JsonSerializer.Serialize(metricsEvent)}[/METRICS_EVENT]";
         }
+
+        private static string VerifyEvent(object payload) => $"[VERIFY_EVENT]{JsonSerializer.Serialize(payload)}[/VERIFY_EVENT]";
 
         /// <summary>Tool name + arguments in a stable order, to recognize a repeated call.</summary>
         private static string CallSignature(string toolName, Dictionary<string, string> parameters) =>

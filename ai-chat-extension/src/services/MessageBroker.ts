@@ -289,6 +289,19 @@ export class MessageBroker {
         await this.postWebState();
         break;
 
+      case "getChecks":
+        this.postChecksState();
+        break;
+
+      case "saveChecks": {
+        const verify = vscode.workspace.getConfiguration("aiChat.verify");
+        await verify.update("enabled", message.state.verify, vscode.ConfigurationTarget.Global);
+        await verify.update("commands", message.state.commands.map((c) => c.trim()).filter(Boolean), vscode.ConfigurationTarget.Global);
+        await vscode.workspace.getConfiguration("aiChat").update("budgetPerTask", Math.max(0, message.state.budget || 0), vscode.ConfigurationTarget.Global);
+        this.postChecksState();
+        break;
+      }
+
       case "saveWeb":
         await this.handleSaveWeb(message);
         break;
@@ -342,6 +355,9 @@ export class MessageBroker {
           ...(activePlan ? { activePlan } : {}),
           ...(planPath ? { planPath } : {}),
           reviewEdits: reviewEditsEnabled(),
+          // Building and testing runs the project's own scripts: only in workspaces the user trusts
+          verify: vscode.workspace.getConfiguration("aiChat.verify").get<boolean>("enabled", true) && vscode.workspace.isTrusted,
+          budgetUsd: Math.max(0, vscode.workspace.getConfiguration("aiChat").get<number>("budgetPerTask", 0) ?? 0),
         },
         run.signal,
       )) {
@@ -384,6 +400,10 @@ export class MessageBroker {
 
           case "approval":
             post({ type: "approvalEvent", approval: event.approval });
+            break;
+
+          case "verify":
+            post({ type: "verifyEvent", verify: event.verify });
             break;
 
           case "plan":
@@ -555,6 +575,18 @@ export class MessageBroker {
     } catch (error) {
       this.postMessage({ type: "completionTest", ok: false, error: error instanceof Error ? error.message : String(error) });
     }
+  }
+
+  private postChecksState(): void {
+    const verify = vscode.workspace.getConfiguration("aiChat.verify");
+    this.postMessage({
+      type: "checksState",
+      state: {
+        verify: verify.get<boolean>("enabled", true),
+        commands: verify.get<string[]>("commands", []) ?? [],
+        budget: vscode.workspace.getConfiguration("aiChat").get<number>("budgetPerTask", 0) ?? 0,
+      },
+    });
   }
 
   private async postWebState(): Promise<void> {

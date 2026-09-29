@@ -7,7 +7,7 @@
  * Backend <-> extension contract version. Must equal AgentProtocol.Version in the backend
  * (Ai-Agent/Agent/AgentProtocol.cs); the health check flags a mismatch as "outdated".
  */
-export const PROTOCOL_VERSION = 6;
+export const PROTOCOL_VERSION = 7;
 
 // ── Message Types ───────────────────────────────────────────────────────
 
@@ -121,6 +121,9 @@ export type WebviewMessage =
   // Web tools (Settings → Web)
   | { type: "getWeb" }
   | { type: "saveWeb"; fetch: "ask" | "allow" | "off"; searchProvider: "" | "brave" | "tavily" | "searxng"; searchKey?: string; searxngUrl?: string }
+  // Checks & budget (Settings)
+  | { type: "getChecks" }
+  | { type: "saveChecks"; state: ChecksState }
   // Autocomplete (Settings → Autocomplete)
   | { type: "getCompletion" }
   | { type: "saveCompletion"; settings: CompletionSettings }
@@ -188,6 +191,9 @@ export type ExtensionMessage =
   | { type: "providerSaved"; ok: boolean; error?: string }
   | { type: "mcpState"; state: McpState }
   | { type: "webState"; state: WebState }
+  /** The verify loop: {status: running|passed|failed|unavailable, attempt, steps, willFix} */
+  | { type: "verifyEvent"; verify: Record<string, unknown> }
+  | { type: "checksState"; state: ChecksState }
   | { type: "completionState"; state: CompletionState }
   | { type: "completionTest"; ok: boolean; text?: string; ms?: number; error?: string }
   /** Result of an MCP change (the servers restart; mcpState follows) */
@@ -249,6 +255,10 @@ export interface AgentRunRequest {
   planPath?: string;
   /** Agent/Auto: edits apply at once and are reviewed afterwards (Keep/Undo); commands still ask */
   reviewEdits?: boolean;
+  /** After the run changed files: build + tests, failures go back to the model (verify loop) */
+  verify?: boolean;
+  /** Stop once the task's model cost reaches this (USD); 0 = no limit */
+  budgetUsd?: number;
 }
 
 /** ask = read-only Q&A, plan = read-only + plan, agent = edits with approval, auto = auto-approved edits */
@@ -406,4 +416,14 @@ export interface CompletionSettings {
 
 export interface CompletionState extends CompletionSettings {
   providers: Array<{ id: string; label: string; models: string[]; detectedStyle: string }>;
+}
+
+// ── Checks & budget ─────────────────────────────────────────────────────
+
+export interface ChecksState {
+  verify: boolean;
+  /** Custom check commands (empty = detected from the project) */
+  commands: string[];
+  /** USD per task, 0 = no limit */
+  budget: number;
 }

@@ -145,6 +145,23 @@
             }
           }
         },
+        "aiChat.verify.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "After the agent changes files (Agent and Auto mode), run the project's build and tests automatically, show the result in the review bar, and let the agent fix failures (up to 2 attempts). Only in trusted workspaces."
+        },
+        "aiChat.verify.commands": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Commands to run as the check (e.g. \"npm run lint\", \"npm test\"). Empty: detected from the project (dotnet, npm/pnpm/yarn/bun, cargo, go, maven, gradle, pytest). Run without a shell."
+        },
+        "aiChat.budgetPerTask": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "description": "Stop a task once its model cost reaches this many US dollars (0 = no limit). Applies to models with a known price."
+        },
         "aiChat.completion.enabled": {
           "type": "boolean",
           "default": false,

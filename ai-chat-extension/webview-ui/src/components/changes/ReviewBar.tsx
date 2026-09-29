@@ -4,6 +4,8 @@ import { Check, ChevronDown, ChevronRight, ExternalLink, FileCode, FileMinus, Fi
 import { isPendingReview, useChangeStore, type FileChange } from "../../stores/changeStore";
 import { keepChanges, undoChanges } from "../../stores/changeActions";
 import { patchStats } from "./PatchView";
+import { useChatStore } from "../../stores/chatStore";
+import { verifySummary, type VerifyData } from "./VerifyCard";
 import { vscode } from "../../services/vscodeApi";
 
 interface FileReview {
@@ -64,6 +66,14 @@ export const ReviewBar: React.FC = () => {
   const pending = useChangeStore(useShallow((state) => state.changes.filter(isPendingReview)));
   const files = useMemo(() => groupByFile(pending), [pending]);
   const [expanded, setExpanded] = useState(true);
+  // The latest check of the agent's changes, shown next to the file count
+  const verify = useChatStore((state) => {
+    for (let i = state.messages.length - 1; i >= 0; i--) {
+      const seg = [...state.messages[i].segments].reverse().find((s) => s.type === "verify");
+      if (seg && seg.type === "verify") return seg.verify;
+    }
+    return null;
+  }) as VerifyData | null;
 
   if (files.length === 0) return null;
 
@@ -90,6 +100,18 @@ export const ReviewBar: React.FC = () => {
             <span className="text-success">+{added}</span> <span className="text-error">−{removed}</span>
           </span>
         </button>
+        {verify && verify.status !== "unavailable" && (
+          <span
+            title={verifySummary(verify)}
+            className={`shrink-0 max-w-[45%] truncate text-[11px] px-1.5 py-0.5 rounded border
+              ${verify.status === "passed" ? "text-success border-success/30 bg-success/10"
+                : verify.status === "failed" ? "text-error border-error/30 bg-error-subtle"
+                  : "text-text-secondary border-border"}`}
+          >
+            {verify.status === "passed" ? "✓ " : verify.status === "failed" ? "✗ " : "… "}
+            {verify.status === "running" ? "Checking…" : verifySummary(verify)}
+          </span>
+        )}
         <button
           onClick={() => undoChanges(pending)}
           className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-text-secondary border border-border

@@ -17,6 +17,7 @@ import { useChangeStore } from "../../stores/changeStore";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { ToolExecutionCard } from "../tools/ToolExecutionCard";
 import { FileChangeCard } from "../changes/FileChangeCard";
+import { VerifyCard } from "../changes/VerifyCard";
 import { PlanCard } from "./PlanCard";
 import { QuestionsCard } from "./QuestionsCard";
 import { TokenCostBadge } from "./TokenCostBadge";
@@ -173,6 +174,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
                 if (seg.type === "plan") {
                   return <PlanCard key={`plan-${idx}`} />;
+                }
+
+                if (seg.type === "verify") {
+                  return <VerifyCard key={`verify-${idx}`} verify={seg.verify} />;
                 }
 
                 if (seg.type === "questions") {

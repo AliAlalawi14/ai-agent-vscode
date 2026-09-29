@@ -232,6 +232,10 @@ export class BackendProcess implements vscode.Disposable {
       anyKey = true;
     }
 
+    // Verify loop: custom check commands (empty = the backend detects them from the project)
+    const checks = vscode.workspace.getConfiguration("aiChat.verify").get<string[]>("commands", []) ?? [];
+    checks.map((c) => c.trim()).filter(Boolean).forEach((c, i) => (env[`Agent__VerifyCommands__${i}`] = c));
+
     // Web tools: fetch mode and the search provider (its key from secret storage)
     const web = vscode.workspace.getConfiguration("aiChat.web");
     env.Web__Fetch = web.get<string>("fetch", "ask") || "ask";

@@ -179,7 +179,7 @@ namespace Ai_Agent.Tools.Services
         /// Without a shell, Windows only finds "name.exe"; npm, npx, yarn... are "name.cmd". Looks the program up on
         /// PATH with PATHEXT's extensions; returns the name unchanged when nothing matches (Process.Start reports it).
         /// </summary>
-        private static string ResolveProgram(string program)
+        public static string ResolveProgram(string program)
         {
             if (!OperatingSystem.IsWindows() || Path.HasExtension(program) || Path.IsPathRooted(program)) return program;
 

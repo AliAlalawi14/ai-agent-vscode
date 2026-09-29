@@ -94,6 +94,7 @@ export const ChatContainer: React.FC = () => {
   const mode = useSettingsStore((state) => state.mode);
   const lastEventAt = useChatStore((state) => state.lastEventAt);
   const limitReached = useChatStore((state) => state.limitReached);
+  const budgetStop = useChatStore((state) => state.budgetStop);
   const backendDetail = useSettingsStore((state) => state.backendDetail);
   const needsSetup = backendStatus === "setup";
 
@@ -431,6 +432,26 @@ export const ChatContainer: React.FC = () => {
 
       {/* Edits applied without asking, waiting for Keep / Undo (after the run, like Cursor) */}
       {!isStreaming && <ReviewBar />}
+
+      {/* Cost budget reached: the task stopped before spending more; Continue gives it another budget */}
+      {budgetStop !== null && !isStreaming && (
+        <div
+          className="mx-4 mb-1 flex items-center gap-2 px-3 py-1.5 rounded-md bg-warning/10
+                        border border-warning/30 animate-slide-up text-[11px]"
+        >
+          <PauseCircle size={12} className="text-warning shrink-0" />
+          <span className="text-text-secondary flex-1">
+            Stopped at your ${budgetStop.budget.toFixed(2)} budget (${budgetStop.spent.toFixed(3)} spent). The work so far is kept.
+          </span>
+          <button
+            onClick={() => runTask("continue", "")}
+            className="flex items-center gap-1 px-2.5 py-0.5 rounded font-medium text-white bg-accent
+                       hover:bg-accent/80 transition-colors"
+          >
+            Continue
+          </button>
+        </div>
+      )}
 
       {/* Plan progress: run the next step without scrolling back to the plan card */}
       <PlanBar onView={handleViewPlan} />

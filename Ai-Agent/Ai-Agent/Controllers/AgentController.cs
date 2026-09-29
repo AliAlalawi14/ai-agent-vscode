@@ -56,7 +56,7 @@ namespace Ai_Agent.Controllers
 
                 await foreach (var chunk in _agentService.RunStreamAsync(
                     validation.SanitizedTask, workspace, request.History, request.Context, request.Model,
-                    request.Mode, request.ActivePlan, request.PlanPath, request.ReviewEdits))
+                    request.Mode, request.ActivePlan, request.PlanPath, request.ReviewEdits, request.Verify, request.BudgetUsd ?? 0))
                 {
                     const string changePrefix = "[CHANGE_EVENT]";
                     const string changeSuffix = "[/CHANGE_EVENT]";
@@ -72,6 +72,8 @@ namespace Ai_Agent.Controllers
                     const string approvalSuffix = "[/APPROVAL_EVENT]";
                     const string questionsPrefix = "[QUESTIONS_EVENT]";
                     const string questionsSuffix = "[/QUESTIONS_EVENT]";
+                    const string verifyPrefix = "[VERIFY_EVENT]";
+                    const string verifySuffix = "[/VERIFY_EVENT]";
 
                     if (chunk.StartsWith(changePrefix) && chunk.EndsWith(changeSuffix))
                     {
@@ -115,6 +117,13 @@ namespace Ai_Agent.Controllers
                         var inner = chunk[questionsPrefix.Length..^questionsSuffix.Length];
                         var questionsElement = JsonSerializer.Deserialize<System.Text.Json.JsonElement>(inner);
                         await Response.WriteAsync($"data: {JsonSerializer.Serialize(new { questions = questionsElement.GetProperty("questions") })}\n\n");
+                    }
+                    else if (chunk.StartsWith(verifyPrefix) && chunk.EndsWith(verifySuffix))
+                    {
+                        // ── VERIFY_EVENT: Emit as {"verify":{status, attempt, steps, tests}} → the review bar's check result ──
+                        var inner = chunk[verifyPrefix.Length..^verifySuffix.Length];
+                        var verifyElement = JsonSerializer.Deserialize<System.Text.Json.JsonElement>(inner);
+                        await Response.WriteAsync($"data: {JsonSerializer.Serialize(new { verify = verifyElement })}\n\n");
                     }
                     else if (chunk.StartsWith(approvalPrefix) && chunk.EndsWith(approvalSuffix))
                     {
@@ -512,6 +521,12 @@ namespace Ai_Agent.Controllers
         /// the chat, like Cursor). Commands still wait for approval. False (default) = each edit waits for Accept.
         /// </summary>
         public bool ReviewEdits { get; set; }
+
+        /// <summary>Agent/Auto: after the run changed files, run the project's build and tests; failures go back to the model to fix.</summary>
+        public bool Verify { get; set; }
+
+        /// <summary>Stop the run once its model cost reaches this many USD (null/0 = no limit; models without a known price aren't limited).</summary>
+        public double? BudgetUsd { get; set; }
     }
 
     public class IndexRequest

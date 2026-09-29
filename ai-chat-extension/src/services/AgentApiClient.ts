@@ -31,6 +31,7 @@ export class AgentApiClient {
     | { type: "toolResult"; event: ToolEvent }
     | { type: "change"; change: FileChange }
     | { type: "approval"; approval: Record<string, unknown> }
+    | { type: "verify"; verify: Record<string, unknown> }
     | { type: "plan"; plan: Record<string, unknown> }
     | { type: "questions"; questions: PlanQuestion[] }
     | { type: "limit"; limit: Record<string, unknown> }
@@ -160,6 +161,12 @@ export class AgentApiClient {
             // Plan events: a submitted plan, or a step status update
             if (parsed.plan) {
               yield { type: "plan", plan: parsed.plan };
+              continue;
+            }
+
+            // Verify loop: build/test after the agent's changes
+            if (parsed.verify) {
+              yield { type: "verify", verify: parsed.verify };
               continue;
             }
 

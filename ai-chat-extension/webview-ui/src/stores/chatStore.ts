@@ -1,3 +1,4 @@
+import type { VerifyData } from '../components/changes/VerifyCard'
 import { create } from 'zustand'
 
 // ── Segment types for inline Windsurf-style flow ────────────────────────
@@ -8,6 +9,8 @@ export type MessageSegment =
   | { type: 'plan' }
   /** Plan mode's clarifying questions; `answers` is set once the user submitted them */
   | { type: 'questions'; questions: PlanQuestion[]; answers?: string[] }
+  /** The verify loop's result (build + tests after the agent's changes); updated in place */
+  | { type: 'verify'; verify: VerifyData }
 
 export interface PlanQuestion {
   question: string
@@ -70,6 +73,11 @@ interface ChatState {
   /** Steps used when the last run hit its step budget (null = not paused) */
   limitReached: number | null
   setLimitReached: (steps: number | null) => void
+  /** The task stopped at the user's budget: what it cost and the cap */
+  budgetStop: { spent: number; budget: number } | null
+  setBudgetStop: (stop: { spent: number; budget: number } | null) => void
+  /** Adds or updates the verify card of a message */
+  setVerify: (messageId: string, verify: VerifyData) => void
   /** Removes an assistant message that never received any content (e.g. the request failed) */
   removeIfEmpty: (id: string) => void
   /** Stop: ends the run in the UI at once (no waiting for the stream): the reply is closed with a note, tools stop spinning */
@@ -262,6 +270,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   limitReached: null,
   setLimitReached: (steps) => set({ limitReached: steps }),
+
+  budgetStop: null,
+  setBudgetStop: (stop) => set({ budgetStop: stop }),
+
+  setVerify: (messageId, verify) =>
+    set(state => ({
+      messages: state.messages.map(msg => {
+        if (msg.id !== messageId) return msg
+        // Each check attempt has its own card; "running" becomes that attempt's result
+        const at = msg.segments.findIndex(s => s.type === 'verify' && (s.verify.attempt ?? 0) === (verify.attempt ?? 0))
+        const segments = at >= 0
+          ? msg.segments.map((s, i) => (i === at ? { type: 'verify' as const, verify } : s))
+          : [...msg.segments, { type: 'verify' as const, verify }]
+        return { ...msg, segments }
+      })
+    })),
 
   removeIfEmpty: (id) =>
     set(state => ({

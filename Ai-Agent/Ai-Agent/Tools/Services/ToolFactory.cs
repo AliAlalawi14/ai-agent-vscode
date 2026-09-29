@@ -45,7 +45,12 @@ namespace Ai_Agent.Tools.Services
             registry.RegisterTool(new MultiFileReaderTool(workspaceRoot));
             registry.RegisterTool(new ReplaceLinesTool(workspaceRoot, logger));
             var allowedCommands = _serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Config.AgentOptions>>().Value.AllowedCommands;
-            registry.RegisterTool(new TerminalTool(workspaceRoot, allowedCommands));
+            // Plus this project's own build/test commands (npm test, cargo test, go build…): still approved one by one.
+            // Only "program subcommand" pairs; "npm run" (any script) and interpreter flags ("python -m") are not added.
+            var detected = Agent.Services.ProjectCommands.Detect(workspaceRoot)
+                .Where(c => c.Args.Count > 0 && !c.Args[0].StartsWith('-') && c.Args[0] != "run" && !Path.IsPathRooted(c.Program))
+                .Select(c => $"{c.Program} {c.Args[0]}");
+            registry.RegisterTool(new TerminalTool(workspaceRoot, allowedCommands.Concat(detected)));
             registry.RegisterTool(new EditFileTool(workspaceRoot));
             registry.RegisterTool(new DeleteFileTool(workspaceRoot));
             registry.RegisterTool(new MoveFileTool(workspaceRoot));

@@ -67,6 +67,12 @@
         // Semantic index: at most this many code files per workspace
         public int MaxIndexedFiles { get; set; } = 2000;
 
+        // Verify loop: commands to run after the agent changed files (empty = detect from the project's files)
+        public List<string> VerifyCommands { get; set; } = new();
+
+        // How many times the agent may try to fix a failed build/test before handing back to the user
+        public int MaxVerifyFixes { get; set; } = 2;
+
         // Shared secret clients must send in the X-Agent-Token header
         public string ApiToken { get; set; } = string.Empty;
     }

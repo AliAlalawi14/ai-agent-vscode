@@ -239,6 +239,7 @@ export function useAgentStream() {
       useChatStore.getState().addUserMessage(task, messageContext);
       useChatStore.getState().touchStream(); // stall timer starts with the request
       useChatStore.getState().setLimitReached(null); // a new request clears the Continue bar
+      useChatStore.getState().setBudgetStop(null);
       const messageId = startAssistantMessage();
 
       try {
@@ -399,8 +400,18 @@ export function useAgentStream() {
         }
 
         case "limitEvent": {
-          // The step budget ran out: the footer offers Continue
-          useChatStore.getState().setLimitReached(message.limit?.steps ?? 0);
+          // The step budget or the cost budget ran out: the footer offers Continue
+          if (message.limit?.reason === "budget") {
+            useChatStore.getState().setBudgetStop({ spent: Number(message.limit.spent ?? 0), budget: Number(message.limit.budget ?? 0) });
+          } else {
+            useChatStore.getState().setLimitReached(message.limit?.steps ?? 0);
+          }
+          break;
+        }
+
+        case "verifyEvent": {
+          const msgId = getCurrentAssistantId();
+          if (msgId && message.verify) useChatStore.getState().setVerify(msgId, message.verify);
           break;
         }
 

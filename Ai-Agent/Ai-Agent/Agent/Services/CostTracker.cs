@@ -64,6 +64,10 @@ namespace Ai_Agent.Agent.Services
             };
         }
 
+        /// <summary>True when this model has a price, so costs and the budget cap mean something.</summary>
+        public bool HasPricing(string model) =>
+            _pricing.ContainsKey(model) || _pricing.ContainsKey(NormalizeModelName(model));
+
         /// <summary>
         /// Format cost for display/logging.
         /// </summary>

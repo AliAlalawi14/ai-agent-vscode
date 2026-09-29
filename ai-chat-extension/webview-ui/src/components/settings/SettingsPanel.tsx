@@ -7,6 +7,7 @@ import { ProviderSetup } from '../setup/ProviderSetup'
 import { McpSettings } from './McpSettings'
 import { WebSettings } from './WebSettings'
 import { AutocompleteSettings } from './AutocompleteSettings'
+import { ChecksSettings } from './ChecksSettings'
 
 interface SettingsPanelProps {
   onClose: () => void
@@ -145,6 +146,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, startAddi
               </div>
             )}
           </div>
+
+          {/* Verify loop and budget */}
+          <ChecksSettings />
 
           {/* MCP servers */}
           {!external && <McpSettings />}
