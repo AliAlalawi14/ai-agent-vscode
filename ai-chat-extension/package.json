@@ -221,5 +221,14 @@
     "@vscode/test-electron": "^2.5.2"
   },
   "publisher": "AliAlalawi14",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AliAlalawi14/ai-agent-vscode.git",
+    "directory": "ai-chat-extension"
+  },
+  "homepage": "https://github.com/AliAlalawi14/ai-agent-vscode#readme",
+  "bugs": {
+    "url": "https://github.com/AliAlalawi14/ai-agent-vscode/issues"
+  }
 }
