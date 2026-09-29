@@ -1,4 +1,3 @@
-import * as vscode from "vscode";
 import type {
   AgentRunRequest,
   FileChange,
@@ -6,29 +5,18 @@ import type {
   ToolEvent,
 } from "../shared/protocol";
 import { apiUrl } from "../shared/endpoints";
+import { authHeaders, backendConnection } from "./backendConnection";
 
-function getBackendUrl(): string {
-  return vscode.workspace
-    .getConfiguration("aiChat")
-    .get<string>("backendUrl", "http://localhost:5036");
-}
-
-/** Headers every backend request needs (the backend rejects requests without the token). */
-export function authHeaders(): Record<string, string> {
-  const token = vscode.workspace
-    .getConfiguration("aiChat")
-    .get<string>("apiToken", "");
-  return { "X-Agent-Token": token };
+/** Endpoints + auth headers of the current backend (managed process or external; started on first use). */
+async function backend() {
+  const connection = await backendConnection();
+  return { urls: apiUrl(connection.url), headers: authHeaders(connection) };
 }
 
 /** Log prefix for tracing the streaming pipeline */
 const LOG = "[AgentApiClient]";
 
 export class AgentApiClient {
-  private get urls() {
-    return apiUrl(getBackendUrl());
-  }
-
   /**
    * Run agent with streaming response.
    * Yields content chunks, tool events, and file changes.
@@ -60,16 +48,17 @@ export class AgentApiClient {
     let rawLineCount = 0;
 
     try {
-      console.log(`${LOG} Connecting to ${this.urls.stream}...`);
+      const { urls, headers } = await backend();
+      console.log(`${LOG} Connecting to ${urls.stream}...`);
       yield {
         type: "diagnostic",
         stage: "connect",
-        detail: `Connecting to ${this.urls.stream}`,
+        detail: `Connecting to ${urls.stream}`,
       };
 
-      const response = await fetch(this.urls.stream, {
+      const response = await fetch(urls.stream, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
+        headers: { "Content-Type": "application/json", ...headers },
         body: JSON.stringify(request),
         signal,
       });
@@ -268,8 +257,9 @@ export class AgentApiClient {
     if (query) params.append("query", query);
     if (workspace) params.append("workspace", workspace);
 
-    const response = await fetch(`${this.urls.symbols}?${params.toString()}`, {
-      headers: authHeaders(),
+    const { urls, headers } = await backend();
+    const response = await fetch(`${urls.symbols}?${params.toString()}`, {
+      headers,
     });
 
     if (!response.ok) {
@@ -295,8 +285,9 @@ export class AgentApiClient {
     if (query) params.append("query", query);
     if (workspace) params.append("workspace", workspace);
 
-    const response = await fetch(`${this.urls.files}?${params.toString()}`, {
-      headers: authHeaders(),
+    const { urls, headers } = await backend();
+    const response = await fetch(`${urls.files}?${params.toString()}`, {
+      headers,
     });
 
     if (!response.ok) {
@@ -309,7 +300,8 @@ export class AgentApiClient {
 
   /** Models of every configured provider that can run the agent, the default one first. */
   async getModels(): Promise<Array<{ id: string; name: string; provider: string }>> {
-    const response = await fetch(this.urls.models, { headers: authHeaders() });
+    const { urls, headers } = await backend();
+    const response = await fetch(urls.models, { headers });
     if (!response.ok) { return []; }
     const data = (await response.json()) as { models?: Array<{ id: string; name: string; provider: string }> };
     return data.models ?? [];
@@ -318,7 +310,8 @@ export class AgentApiClient {
   /** A plan file's current content, parsed by the backend (null if it is gone or not a plan file). */
   async getPlan(path: string, workspace: string): Promise<Record<string, unknown> | null> {
     const params = new URLSearchParams({ path, workspace });
-    const response = await fetch(`${this.urls.plan}?${params.toString()}`, { headers: authHeaders() });
+    const { urls, headers } = await backend();
+    const response = await fetch(`${urls.plan}?${params.toString()}`, { headers });
     if (!response.ok) { return null; }
     const data = (await response.json()) as { plan?: Record<string, unknown> };
     return data.plan ?? null;
@@ -326,9 +319,10 @@ export class AgentApiClient {
 
   /** Accept or reject a change/command the agent is waiting on. */
   async approve(approvalId: string, approved: boolean): Promise<void> {
-    const response = await fetch(this.urls.approve, {
+    const { urls, headers } = await backend();
+    const response = await fetch(urls.approve, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
+      headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify({ approvalId, approved }),
     });
     if (!response.ok) {
@@ -358,9 +352,10 @@ export class AgentApiClient {
       payload.filePath = filePath;
     }
 
-    const response = await fetch(this.urls.revert, {
+    const { urls, headers } = await backend();
+    const response = await fetch(urls.revert, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
+      headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify(payload),
     });
 

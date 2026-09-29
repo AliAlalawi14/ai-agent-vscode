@@ -12,3 +12,10 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+webview-ui/node_modules/**
+webview-ui/src/**
+webview-ui/public/**
+webview-ui/*.json
+webview-ui/*.ts
+webview-ui/index.html
+# server/<rid>/ (the bundled backend) IS packaged

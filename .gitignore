@@ -35,3 +35,9 @@ Thumbs.db
 # Local vector store data and other tools' configs
 **/chroma/
 .qwen/
+
+# Default SQLite memory file when the backend runs from source
+Ai-Agent/Ai-Agent/data/
+
+# Backend published into the extension for packaging (built by scripts/publish-backend)
+ai-chat-extension/server/

@@ -10,7 +10,8 @@ import type {
 } from "../shared/protocol";
 import { apiUrl } from "../shared/endpoints";
 import { PROTOCOL_VERSION } from "../shared/protocol";
-import { agentApiClient, authHeaders } from "./AgentApiClient";
+import { agentApiClient } from "./AgentApiClient";
+import { authHeaders, backendConnection } from "./backendConnection";
 import { reverseApplyUnifiedPatch } from "./patchUtils";
 import { findStaleBundles, recordLoadedBundles } from "./buildInfo";
 
@@ -360,8 +361,10 @@ export class MessageBroker {
     this.postMessage({ type: "extensionStatus", staleBundles: stale });
 
     try {
-      const response = await fetch(apiUrl(this.getBackendUrl()).health, {
-        headers: authHeaders(),
+      // Starts this window's backend on first use (or reaches the external one from settings)
+      const connection = await backendConnection();
+      const response = await fetch(apiUrl(connection.url).health, {
+        headers: authHeaders(connection),
       });
       if (response.ok) {
         const data = (await response.json()) as {
@@ -443,12 +446,6 @@ export class MessageBroker {
 
   saveActiveConversationId(id: string | null): void {
     this.context.workspaceState.update("aiChat.activeConversationId", id);
-  }
-
-  private getBackendUrl(): string {
-    return vscode.workspace
-      .getConfiguration("aiChat")
-      .get<string>("backendUrl", "http://localhost:5036");
   }
 
   /**
@@ -638,13 +635,20 @@ export class MessageBroker {
     return result;
   }
 
+  /**
+   * The workspace folder the user is working in: the folder of the active file (multi-root windows),
+   * else the first folder.
+   */
   private getWorkspaceRoot(): string {
     const folders = vscode.workspace.workspaceFolders;
     if (!folders || folders.length === 0) {
       throw new Error("No workspace folder open");
     }
-    return folders[0].uri.fsPath;
+    const active = vscode.window.activeTextEditor?.document.uri;
+    const activeFolder = active ? vscode.workspace.getWorkspaceFolder(active) : undefined;
+    return (activeFolder ?? folders[0]).uri.fsPath;
   }
+
 
   dispose(): void {
     this.disposables.forEach((d) => d.dispose());

@@ -1,7 +1,7 @@
 {
   "name": "ai-chat-extension",
-  "displayName": "ai-chat-extension",
-  "description": "",
+  "displayName": "AI Agent",
+  "description": "A coding agent that plans with you, makes changes you approve, and manages which AI model does what.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.120.0"
@@ -43,6 +43,26 @@
       {
         "command": "aiChat.askAboutSelection",
         "title": "AI Chat: Ask About Selection"
+      },
+      {
+        "command": "aiChat.setApiKey",
+        "title": "AI Agent: Set API Key"
+      },
+      {
+        "command": "aiChat.restartBackend",
+        "title": "AI Agent: Restart Backend"
+      },
+      {
+        "command": "aiChat.showBackendLog",
+        "title": "AI Agent: Show Backend Log"
+      },
+      {
+        "command": "aiChat.addProvider",
+        "title": "AI Agent: Add Provider (Gemini, OpenAI, Mistral, Ollama…)"
+      },
+      {
+        "command": "aiChat.removeProvider",
+        "title": "AI Agent: Remove Provider"
       }
     ],
     "keybindings": [
@@ -72,13 +92,13 @@
       "properties": {
         "aiChat.backendUrl": {
           "type": "string",
-          "default": "http://localhost:5036",
-          "description": "URL of the AI agent backend server"
+          "default": "",
+          "description": "Leave empty: the extension starts its own backend. Set a URL (e.g. http://localhost:5036) to use a backend you run yourself."
         },
         "aiChat.apiToken": {
           "type": "string",
           "default": "",
-          "description": "Shared token sent as X-Agent-Token; must match the backend's Agent:ApiToken"
+          "description": "Only with aiChat.backendUrl: the token that backend expects (Agent:ApiToken). The built-in backend uses a random token automatically."
         },
         "aiChat.streamTimeout": {
           "type": "number",
@@ -87,9 +107,88 @@
         },
         "aiChat.diffViewMode": {
           "type": "string",
-          "enum": ["side-by-side", "inline"],
+          "enum": [
+            "side-by-side",
+            "inline"
+          ],
           "default": "side-by-side",
           "description": "How to display file change diffs"
+        },
+        "aiChat.backendPath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional path to a backend executable to start instead of the bundled one (for contributors)."
+        },
+        "aiChat.defaultProvider": {
+          "type": "string",
+          "default": "",
+          "description": "Provider used when no model is picked: deepseek, anthropic, or the name of a provider you added. Empty = the first configured."
+        },
+        "aiChat.openai.baseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI-compatible endpoint without /v1: https://api.openai.com, https://openrouter.ai/api, or http://localhost:11434 for a local Ollama (no key needed).",
+          "deprecationMessage": "Use 'AI Agent: Add Provider' instead (supports several providers)."
+        },
+        "aiChat.openai.providerName": {
+          "type": "string",
+          "default": "openai",
+          "description": "Name shown in the model picker, e.g. openai, openrouter, ollama.",
+          "deprecationMessage": "Use 'AI Agent: Add Provider' instead (supports several providers)."
+        },
+        "aiChat.openai.models": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Model ids to offer, e.g. [\"gpt-5\"] or [\"qwen3:14b\"] for Ollama. They must support tool calling.",
+          "deprecationMessage": "Use 'AI Agent: Add Provider' instead (supports several providers)."
+        },
+        "aiChat.openai.useMaxCompletionTokens": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable for OpenAI's newer models, which reject max_tokens.",
+          "deprecationMessage": "Use 'AI Agent: Add Provider' instead (supports several providers)."
+        },
+        "aiChat.providers": {
+          "type": "array",
+          "default": [],
+          "description": "OpenAI-compatible providers added with 'AI Agent: Add Provider' (keys are in secret storage, not here).",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "baseUrl": {
+                "type": "string"
+              },
+              "auth": {
+                "type": "string",
+                "enum": [
+                  "bearer",
+                  "api-key",
+                  "none"
+                ]
+              },
+              "models": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "useMaxCompletionTokens": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "name",
+              "baseUrl",
+              "auth",
+              "models"
+            ]
+          }
         }
       }
     }
@@ -120,5 +219,7 @@
     "webpack-cli": "^6.0.1",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2"
-  }
+  },
+  "publisher": "AliAlalawi14",
+  "license": "MIT"
 }
