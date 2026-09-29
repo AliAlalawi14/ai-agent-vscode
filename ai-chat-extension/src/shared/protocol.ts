@@ -187,7 +187,7 @@ export type ExtensionMessage =
   | {
       type: "healthStatus";
       /** setup = no model provider configured yet: the panel shows its setup form */
-      status: "connected" | "degraded" | "disconnected" | "outdated" | "setup";
+      status: "connected" | "degraded" | "disconnected" | "outdated" | "setup" | "starting";
       detail?: string;
     }
   | { type: "setupState"; setup: SetupState }

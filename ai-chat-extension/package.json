@@ -2,7 +2,7 @@
   "name": "stoat",
   "displayName": "Stoat – AI Coding Agent",
   "description": "Small agent, takes on the big ones. An open-source AI coding agent for VS Code: plans with you, edits your code, and lets you Keep or Undo every change. Works with Claude, GPT, Gemini, DeepSeek, Ollama or any OpenAI-compatible model, using your own key.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "icon": "resources/logo.png",
   "galleryBanner": {
     "color": "#0C1943",

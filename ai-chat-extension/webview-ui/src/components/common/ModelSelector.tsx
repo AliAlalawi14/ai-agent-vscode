@@ -31,7 +31,8 @@ export const ModelSelector: React.FC = () => {
 
   const currentModel = availableModels.find(m => m.id === selectedModel)
   const displayName =
-    currentModel?.name || selectedModel || (backendStatus === 'setup' ? 'Add a model' : 'Select Model')
+    currentModel?.name || selectedModel ||
+    (backendStatus === 'setup' ? 'Add a model' : backendStatus === 'starting' ? 'Loading models…' : 'Select Model')
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -85,6 +86,8 @@ export const ModelSelector: React.FC = () => {
           <p className="text-[11px] text-text-muted text-center mb-2">
             {backendStatus === 'setup'
               ? 'No model provider yet.'
+              : backendStatus === 'starting'
+                ? 'The agent is starting; models appear in a moment.'
               : backendStatus === 'connected'
                 ? 'The backend has no models configured.'
                 : 'The backend is not running.'}

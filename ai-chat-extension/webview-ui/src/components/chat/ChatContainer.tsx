@@ -476,6 +476,18 @@ export const ChatContainer: React.FC = () => {
         </div>
       )}
 
+      {/* The backend is (re)starting: say so, so a slow first start never looks broken */}
+      {backendStatus === "starting" && !isStreaming && (
+        <div
+          role="status"
+          className="mx-4 mb-1 flex items-center gap-2 px-3 py-1.5 rounded-md bg-bg-secondary
+                        border border-border animate-slide-up text-[11px] text-text-secondary"
+        >
+          <Loader2 size={12} className="text-accent animate-spin shrink-0" />
+          <span className="flex-1">Starting the agent… this takes a few seconds. You can type your message meanwhile.</span>
+        </div>
+      )}
+
       {/* No provider yet but a conversation is open: the setup form is one click away */}
       {needsSetup && messages.length > 0 && (
         <div

@@ -34,6 +34,14 @@ export class BackendProcess implements vscode.Disposable {
   private readonly started = new vscode.EventEmitter<void>();
   /** Fires when a (re)start succeeded, so open chat panels refresh their status and model list. */
   readonly onDidStart = this.started.event;
+  private readonly starting$ = new vscode.EventEmitter<void>();
+  /** Fires when a (re)start begins, so the panels show "Starting…" instead of a red dot. */
+  readonly onWillStart = this.starting$.event;
+
+  /** True while the backend process is being started (the panel shows a loading state). */
+  get isStarting(): boolean {
+    return this.starting !== null;
+  }
   /** Why the last start failed (shown in the chat panel); null after a successful start. */
   lastProblem: string | null = null;
 
@@ -98,6 +106,7 @@ export class BackendProcess implements vscode.Disposable {
   // No awaited notifications in here: every chat request and health check waits on this start, so a
   // notification the user never clicks would leave the chat "Thinking..." forever. The panel shows lastProblem.
   private async start(): Promise<BackendConnection | null> {
+    this.starting$.fire();
     const exe = this.findExecutable();
     if (!exe) {
       this.lastProblem =
@@ -166,6 +175,7 @@ export class BackendProcess implements vscode.Disposable {
   dispose(): void {
     this.stop();
     this.started.dispose();
+    this.starting$.dispose();
     this.output.dispose();
   }
 

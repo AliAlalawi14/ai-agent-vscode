@@ -48,13 +48,13 @@ function loadMode(): AgentMode {
   return 'agent'
 }
 
-/** setup = no model provider configured yet (the chat shows the setup form) */
-export type BackendStatus = 'connected' | 'degraded' | 'disconnected' | 'outdated' | 'setup'
+/** setup = no model provider configured yet (the chat shows the setup form); starting = the backend is starting */
+export type BackendStatus = 'connected' | 'degraded' | 'disconnected' | 'outdated' | 'setup' | 'starting'
 
 export const useSettingsStore = create<SettingsState>((set) => ({
   selectedModel: null,
   availableModels: [],
-  backendStatus: 'disconnected',
+  backendStatus: 'starting',   // until the first check answers: never a red dot on open
   backendDetail: null,
   staleBundles: [],
   setStaleBundles: (bundles) => set({ staleBundles: bundles }),

@@ -51,6 +51,7 @@ export class MessageBroker {
     // A key added from the command palette (or a restart) updates this panel's status and models
     const backend = getBackendProcess();
     if (backend) {
+      this.disposables.push(backend.onWillStart(() => this.postMessage({ type: "healthStatus", status: "starting" })));
       this.disposables.push(backend.onDidStart(() => {
         void this.handleHealthCheck();
         void this.mcp.postState();   // MCP servers start with the backend
@@ -506,6 +507,12 @@ export class MessageBroker {
       this.postMessage({ type: "healthStatus", status: "setup" });
       await this.postSetupState();
       return;
+    }
+
+    // Not running yet: say so right away; starting takes a few seconds (the first time a little more)
+    const backend = getBackendProcess();
+    if (backend && !BackendProcess.isExternal() && (backend.isStarting || !backend.current())) {
+      this.postMessage({ type: "healthStatus", status: "starting" });
     }
 
     try {
