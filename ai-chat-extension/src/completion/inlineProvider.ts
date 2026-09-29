@@ -2,10 +2,13 @@ import * as vscode from "vscode";
 import { PROVIDER_KEYS } from "../services/BackendProcess";
 import { providerSecretKey } from "../services/providerPresets";
 import { readProviders } from "../services/providerSetup";
+import { OLLAMA_HOST } from "./local";
 import {
   CompletionEngine,
+  LOCAL_LIMITS,
   buildContext,
   detectStyle,
+  isLocalEndpoint,
   shouldComplete,
   type CompletionContext,
   type CompletionEndpoint,
@@ -22,6 +25,9 @@ export interface CompletionProviderOption {
 
 const DEEPSEEK = { id: "deepseek", baseUrl: "https://api.deepseek.com/beta", model: "deepseek-chat" };
 
+/** Autocomplete from Ollama on this computer: free, private, works offline (set up in Settings → Autocomplete). */
+export const LOCAL_PROVIDER_ID = "ollama-local";
+
 function settings() {
   const c = vscode.workspace.getConfiguration("aiChat.completion");
   return {
@@ -36,7 +42,14 @@ function settings() {
 
 /** Providers that can serve completions (Claude has no fill-in-the-middle or OpenAI-style API, so it isn't listed). */
 export async function completionProviders(secrets: vscode.SecretStorage): Promise<CompletionProviderOption[]> {
-  const options: CompletionProviderOption[] = [];
+  const options: CompletionProviderOption[] = [
+    {
+      id: LOCAL_PROVIDER_ID,
+      label: "Ollama on this computer (offline)",
+      models: ["qwen2.5-coder:1.5b-base", "qwen2.5-coder:3b-base", "qwen2.5-coder:7b-base", "qwen2.5-coder:0.5b-base"],
+      detectedStyle: "ollama",
+    },
+  ];
   const deepseek = PROVIDER_KEYS.find((p) => p.id === "deepseek");
   if (deepseek && (await secrets.get(deepseek.secret))) {
     options.push({ id: DEEPSEEK.id, label: "DeepSeek", models: [DEEPSEEK.model], detectedStyle: "completions" });
@@ -51,6 +64,10 @@ export async function completionProviders(secrets: vscode.SecretStorage): Promis
 export async function resolveEndpoint(secrets: vscode.SecretStorage, override?: { provider: string; model: string; style: FimStyle | "auto" }): Promise<CompletionEndpoint | null> {
   const s = override ?? settings();
   if (!s.provider) { return null; }
+
+  if (s.provider === LOCAL_PROVIDER_ID) {
+    return { style: s.style === "auto" ? "ollama" : s.style, baseUrl: OLLAMA_HOST, model: s.model || "qwen2.5-coder:1.5b-base", headers: {} };
+  }
 
   if (s.provider === DEEPSEEK.id) {
     const key = await secrets.get(PROVIDER_KEYS.find((p) => p.id === "deepseek")!.secret);
@@ -126,20 +143,21 @@ export class StoatInlineProvider implements vscode.InlineCompletionItemProvider,
     if (context.selectedCompletionInfo) { return undefined; }            // the suggest widget is open
     if (document.getText().length > 1_000_000) { return undefined; }
 
+    const endpoint = await resolveEndpoint(this.context.secrets);
+    if (!endpoint || !endpoint.model) { return undefined; }
+
     const ctx: CompletionContext = buildContext(
       document.getText(),
       document.offsetAt(position),
       document.languageId,
       vscode.workspace.asRelativePath(document.uri),
+      ...(isLocalEndpoint(endpoint) ? [LOCAL_LIMITS] : []),
     );
     if (!shouldComplete(ctx)) { return undefined; }
 
     // Wait for a pause in typing; a new keystroke cancels this call
     await new Promise((r) => setTimeout(r, context.triggerKind === vscode.InlineCompletionTriggerKind.Invoke ? 0 : s.debounceMs));
     if (token.isCancellationRequested) { return undefined; }
-
-    const endpoint = await resolveEndpoint(this.context.secrets);
-    if (!endpoint || !endpoint.model) { return undefined; }
 
     const abort = new AbortController();
     const subscription = token.onCancellationRequested(() => abort.abort());

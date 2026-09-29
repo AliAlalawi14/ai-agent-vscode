@@ -41,14 +41,30 @@ export const DEFAULT_OPTIONS: CompletionOptions = { maxLines: 8, maxTokens: 128,
 const MAX_PREFIX = 3000;
 const MAX_SUFFIX = 1200;
 
-/** The text before and after the cursor, cut at line boundaries so the model sees whole lines. */
-export function buildContext(text: string, offset: number, languageId: string, path: string): CompletionContext {
-  let start = Math.max(0, offset - MAX_PREFIX);
+/** Context for a model running on this computer */
+export const LOCAL_LIMITS = { prefix: 1500, suffix: 500 };
+
+export function isLocalEndpoint(endpoint: CompletionEndpoint): boolean {
+  return /\/\/(localhost|127\.0\.0\.1|\[::1\])[:/]/.test(endpoint.baseUrl);
+}
+
+/**
+ * The text before and after the cursor, cut at line boundaries so the model sees whole lines. Local models get
+ * less (the limits), because reading the prompt is the slow part on a laptop CPU.
+ */
+export function buildContext(
+  text: string,
+  offset: number,
+  languageId: string,
+  path: string,
+  limits: { prefix: number; suffix: number } = { prefix: MAX_PREFIX, suffix: MAX_SUFFIX },
+): CompletionContext {
+  let start = Math.max(0, offset - limits.prefix);
   if (start > 0) {
     const nl = text.indexOf("\n", start);
     if (nl !== -1 && nl < offset) { start = nl + 1; }
   }
-  let end = Math.min(text.length, offset + MAX_SUFFIX);
+  let end = Math.min(text.length, offset + limits.suffix);
   if (end < text.length) {
     const nl = text.lastIndexOf("\n", end);
     if (nl > offset) { end = nl; }

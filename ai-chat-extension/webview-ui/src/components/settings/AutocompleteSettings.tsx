@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Loader2, Sparkles } from 'lucide-react'
 import { vscode } from '../../services/vscodeApi'
 import { openProviderSettings } from '../../stores/setupStore'
+import { LocalAutocompleteCard } from './LocalAutocompleteCard'
 
 type Style = 'auto' | 'completions' | 'mistral' | 'ollama' | 'chat'
 
@@ -78,13 +79,20 @@ export const AutocompleteSettings: React.FC = () => {
           <div className={`absolute top-[2px] w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-[15px]' : 'translate-x-[2px]'}`} />
         </button>
       </div>
+      <LocalAutocompleteCard />
+
       <p className="text-[10px] text-text-muted leading-snug mb-2">
         Ghost-text suggestions as you type; Tab accepts. Code-completion models work best: a small local coder model
         on Ollama (e.g. <code>qwen2.5-coder:1.5b-base</code>), Codestral, or DeepSeek. The code around your cursor is
         sent to this provider.
       </p>
 
-      {state.providers.length === 0 ? (
+      {state.providers.length <= 1 && !provider ? (
+        <p className="text-[11px] text-text-muted">
+          Or use a cloud provider: add DeepSeek, Mistral (Codestral) or another OpenAI-compatible provider first.{' '}
+          <button onClick={() => openProviderSettings()} className="text-accent hover:underline">Add provider</button>
+        </p>
+      ) : state.providers.length === 0 ? (
         <p className="text-[11px] text-text-muted">
           Add DeepSeek, Mistral, Ollama or another OpenAI-compatible provider first.{' '}
           <button onClick={() => openProviderSettings()} className="text-accent hover:underline">Add provider</button>

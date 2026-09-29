@@ -19,7 +19,8 @@ import { configuredProviders, listProviderModels, removeProvider, saveProvider, 
 import { McpPanelService } from "./mcpPanel";
 import { WEB_SEARCH_KEY_SECRET } from "./BackendProcess";
 import { completionProviders, resolveEndpoint } from "../completion/inlineProvider";
-import { CompletionEngine, buildContext } from "../completion/core";
+import { CompletionEngine, LOCAL_LIMITS, buildContext, isLocalEndpoint } from "../completion/core";
+import { LocalAutocompleteService } from "../completion/localPanel";
 import { reverseApplyUnifiedPatch } from "./patchUtils";
 import { findStaleBundles, recordLoadedBundles } from "./buildInfo";
 
@@ -34,12 +35,14 @@ export class MessageBroker {
   private context: vscode.ExtensionContext;
   private recentFiles: string[] = [];
   private readonly mcp: McpPanelService;
+  private readonly local: LocalAutocompleteService;
   private maxRecentFiles = 10;
 
   constructor(webview: vscode.Webview, context: vscode.ExtensionContext) {
     this.webview = webview;
     this.context = context;
     this.mcp = new McpPanelService(context, (m) => this.postMessage(m));
+    this.local = new LocalAutocompleteService(context, (m) => this.postMessage(m));
     // The webview (re)loads its bundle now; remember which build it got
     recordLoadedBundles(context.extensionPath);
     this.setupMessageListener();
@@ -283,6 +286,23 @@ export class MessageBroker {
 
       case "testCompletion":
         await this.handleTestCompletion(message.settings);
+        break;
+
+      case "getLocalAutocomplete":
+        await this.local.postState();
+        break;
+
+      case "startOllama":
+        await this.local.start();
+        break;
+
+      case "setupLocalAutocomplete":
+        await this.local.setup(message.model);
+        await this.postCompletionState();
+        break;
+
+      case "cancelLocalPull":
+        this.local.cancel();
         break;
 
       case "getWeb":
@@ -562,7 +582,8 @@ export class MessageBroker {
       return;
     }
     const sample = "function isEven(n: number): boolean {\n  return \n}\n";
-    const ctx = buildContext(sample, sample.indexOf("return ") + "return ".length, "typescript", "sample.ts");
+    const ctx = buildContext(sample, sample.indexOf("return ") + "return ".length, "typescript", "sample.ts",
+      ...(isLocalEndpoint(endpoint) ? [LOCAL_LIMITS] : []));
     try {
       const result = await new CompletionEngine().complete(endpoint, ctx);
       this.postMessage({

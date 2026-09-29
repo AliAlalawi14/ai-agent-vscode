@@ -127,7 +127,12 @@ export type WebviewMessage =
   // Autocomplete (Settings → Autocomplete)
   | { type: "getCompletion" }
   | { type: "saveCompletion"; settings: CompletionSettings }
-  | { type: "testCompletion"; settings: CompletionSettings };
+  | { type: "testCompletion"; settings: CompletionSettings }
+  // Local autocomplete (Settings → Autocomplete → Run on this computer)
+  | { type: "getLocalAutocomplete" }
+  | { type: "startOllama" }
+  | { type: "setupLocalAutocomplete"; model: string }
+  | { type: "cancelLocalPull" };
 
 // Extension -> Webview
 export type ExtensionMessage =
@@ -196,6 +201,9 @@ export type ExtensionMessage =
   | { type: "checksState"; state: ChecksState }
   | { type: "completionState"; state: CompletionState }
   | { type: "completionTest"; ok: boolean; text?: string; ms?: number; error?: string }
+  | { type: "localAutocomplete"; state: import("../completion/localPanel").LocalAutocompleteState }
+  | { type: "localPull"; status: string; percent?: number }
+  | { type: "localDone"; ok: boolean; text?: string; ms?: number; error?: string }
   /** Result of an MCP change (the servers restart; mcpState follows) */
   | { type: "mcpResult"; ok: boolean; message: string }
   | {
