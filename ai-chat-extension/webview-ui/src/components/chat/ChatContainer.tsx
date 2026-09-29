@@ -34,6 +34,7 @@ import { HistorySidebar } from "../history/HistorySidebar";
 import { SettingsPanel } from "../settings/SettingsPanel";
 import { ProviderSetup } from "../setup/ProviderSetup";
 import { openProviderSettings } from "../../stores/setupStore";
+import { parseMcpToolName } from "../../stores/mcpStore";
 import { useAgentStream } from "../../hooks/useAgentStream";
 import { useHealthCheck } from "../../hooks/useHealthCheck";
 import { vscode } from "../../services/vscodeApi";
@@ -52,6 +53,8 @@ function describeTool(tool: { tool: string; args: Record<string, unknown> }): st
     list_directory: "Listing",
     run_terminal: "Running",
   };
+  const mcp = parseMcpToolName(tool.tool);
+  if (mcp) return `Using ${mcp.tool} (${mcp.server})…`;
   const verb = verbs[tool.tool] ?? tool.tool.replace(/_/g, " ");
   const a = tool.args ?? {};
   const target = a.command

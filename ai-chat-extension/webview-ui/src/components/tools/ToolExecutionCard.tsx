@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { friendlyToolName } from '../../stores/mcpStore'
 import { 
   FileSearch, 
   FileEdit, 
@@ -94,8 +95,8 @@ export const ToolExecutionCard: React.FC<ToolExecutionCardProps> = ({ tool }) =>
   const label = isError
     ? 'Failed'
     : isCompleted
-      ? doneLabels[tool.tool] || tool.tool.replace(/_/g, ' ')
-      : toolLabels[tool.tool] || tool.tool.replace(/_/g, ' ')
+      ? doneLabels[tool.tool] || friendlyToolName(tool.tool)
+      : toolLabels[tool.tool] || friendlyToolName(tool.tool)
   const target = getTarget()
 
   return (

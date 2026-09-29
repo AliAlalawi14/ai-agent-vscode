@@ -26,6 +26,7 @@ namespace Ai_Agent.Agent.Services
         private readonly ChangeTracker _changeTracker;
         private readonly ConversationMemoryService _memoryService;
         private readonly ApprovalBroker _approvals;
+        private readonly Mcp.McpConnectionManager? _mcp;
         private readonly AuditLog _audit;
         private readonly ProjectContextService _projectContext;
         private readonly CodeVectorIndexer _vectorIndexer;
@@ -67,8 +68,10 @@ namespace Ai_Agent.Agent.Services
             AuditLog audit,
             ProjectContextService projectContext,
             CodeVectorIndexer vectorIndexer,
-            PlanStore planStore)
+            PlanStore planStore,
+            Mcp.McpConnectionManager? mcp = null)
         {
+            _mcp = mcp;
             _llmClient = llmClient;
             _toolFactory = toolFactory;
             _promptBuilder = promptBuilder;
@@ -108,6 +111,9 @@ namespace Ai_Agent.Agent.Services
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             var workspaceRoot = workspace ?? _defaultWorkspace;
             mode = AgentModes.Normalize(mode);
+            // MCP servers start in the background with the backend; the first request waits briefly for them
+            if (_mcp != null)
+                await _mcp.WaitForStartupAsync(_httpContextAccessor.HttpContext?.RequestAborted ?? CancellationToken.None);
             var toolRegistry = _toolFactory.CreateRegistry(workspaceRoot, mode);
             var toolDefinitions = toolRegistry.GetToolDefinitions();
 
@@ -741,13 +747,16 @@ namespace Ai_Agent.Agent.Services
         /// <summary>
         /// Auto mode: edits go through without asking; commands only if they are on the auto-approve list.
         /// reviewEdits (Agent or Auto): edits go through too, the user reviews them afterwards; commands are unchanged.
+        /// Any other tool that needs approval (MCP tools, web access) always asks: its own "always allow"
+        /// setting is what skips the gate (RequiresApproval = false), never the mode.
         /// </summary>
         private bool IsAutoApproved(string mode, string toolName, Dictionary<string, string> parameters, bool reviewEdits)
         {
             // Only recorded file writes: each one can be undone from the review
             if (reviewEdits && _fileWritingTools.Contains(toolName) && mode is AgentModes.Agent or AgentModes.Auto) return true;
             if (mode != AgentModes.Auto) return false;
-            if (toolName != "run_terminal") return true;
+            if (_fileWritingTools.Contains(toolName)) return true;
+            if (toolName != "run_terminal") return false;
 
             var command = parameters.GetValueOrDefault("command")?.Trim() ?? string.Empty;
             return _options.Value.AutoApproveCommands.Any(allowed =>

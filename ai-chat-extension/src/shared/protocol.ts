@@ -7,7 +7,7 @@
  * Backend <-> extension contract version. Must equal AgentProtocol.Version in the backend
  * (Ai-Agent/Agent/AgentProtocol.cs); the health check flags a mismatch as "outdated".
  */
-export const PROTOCOL_VERSION = 5;
+export const PROTOCOL_VERSION = 6;
 
 // ── Message Types ───────────────────────────────────────────────────────
 
@@ -108,7 +108,16 @@ export type WebviewMessage =
   | { type: "removeProvider"; name: string }
   | { type: "backendAction"; action: "restart" | "showLog" }
   /** Opens a provider's "get a key" page (https only) */
-  | { type: "openExternal"; url: string };
+  | { type: "openExternal"; url: string }
+  // MCP servers (Settings → MCP servers)
+  | { type: "getMcp" }
+  /** Add or edit a server; values of `secretKeys` ("env:NAME" / "header:NAME") go to secret storage */
+  | { type: "saveMcpServer"; name: string; entry: McpServerEntryView; secretKeys: string[]; originalName?: string }
+  | { type: "removeMcpServer"; name: string }
+  | { type: "setMcpServer"; name: string; disabled?: boolean; alwaysAllow?: boolean; disabledTools?: string[] }
+  | { type: "setMcpSecret"; name: string; value: string }
+  | { type: "importMcp"; sourceId: string }
+  | { type: "addMcpPreset"; presetId: string; values: Record<string, string> };
 
 // Extension -> Webview
 export type ExtensionMessage =
@@ -170,6 +179,9 @@ export type ExtensionMessage =
   | { type: "providerModels"; requestId: number; models: string[]; error?: string }
   /** Result of saveProvider/removeProvider (ok = saved and the backend is up again) */
   | { type: "providerSaved"; ok: boolean; error?: string }
+  | { type: "mcpState"; state: McpState }
+  /** Result of an MCP change (the servers restart; mcpState follows) */
+  | { type: "mcpResult"; ok: boolean; message: string }
   | {
       type: "modelsAvailable";
       models: Array<{ id: string; name: string; provider: string }>;
@@ -317,4 +329,49 @@ export interface ProviderSetupRequest {
   /** Custom server */
   baseUrl?: string;
   auth?: "bearer" | "api-key" | "none";
+}
+
+// ── MCP servers ─────────────────────────────────────────────────────────
+
+export interface McpServerEntryView {
+  command?: string;
+  args?: string[];
+  env?: Record<string, string>;
+  url?: string;
+  headers?: Record<string, string>;
+  disabled?: boolean;
+  alwaysAllow?: boolean | string[];
+  disabledTools?: string[];
+}
+
+export interface McpToolView {
+  name: string;
+  description: string;
+  readOnly: boolean;
+  enabled: boolean;
+  alwaysAllowed: boolean;
+}
+
+export interface McpServerView {
+  name: string;
+  entry: McpServerEntryView;
+  transport: "stdio" | "http";
+  /** "npx -y @playwright/mcp@latest" or the URL */
+  target: string;
+  /** connected | starting | error | disabled | stopped (backend not running) */
+  state: string;
+  error?: string;
+  tools: McpToolView[];
+  /** What the enabled tools add to every request */
+  promptTokens: number;
+  /** Secret names the config refers to that have no stored value */
+  missingSecrets: string[];
+}
+
+export interface McpState {
+  servers: McpServerView[];
+  configErrors: string[];
+  importSources: Array<{ id: string; label: string; available: boolean }>;
+  presets: Array<{ id: string; label: string; detail: string; added: boolean; needs?: Array<{ key: string; label: string; url?: string }> }>;
+  backendRunning: boolean;
 }

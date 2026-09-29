@@ -5,6 +5,8 @@ import { BackendProcess, PROVIDER_KEYS } from './services/BackendProcess';
 import { setBackendProcess } from './services/backendConnection';
 import { registerProviderCommands } from './services/providerCommands';
 
+let mcpRestart: ReturnType<typeof setTimeout> | undefined;
+
 export function activate(context: vscode.ExtensionContext): void {
   console.log('Stoat is now active');
   recordLoadedBundles(context.extensionPath);
@@ -44,6 +46,12 @@ export function activate(context: vscode.ExtensionContext): void {
     // New/removed folders change what the backend may touch: restart it with the new list
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
       if (!BackendProcess.isExternal()) { void backend.restart(); }
+    }),
+    // MCP servers changed (panel or settings.json): restart so the backend starts the new set
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (!e.affectsConfiguration('aiChat.mcpServers') || BackendProcess.isExternal()) { return; }
+      clearTimeout(mcpRestart);
+      mcpRestart = setTimeout(() => { void backend.restartIfRunning(); }, 400);
     })
   );
 

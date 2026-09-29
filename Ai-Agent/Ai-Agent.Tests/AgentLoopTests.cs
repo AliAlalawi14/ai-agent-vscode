@@ -78,7 +78,7 @@ namespace Ai_Agent.Tests
         public AgentService Agent => Services.GetRequiredService<AgentService>();
         public ApprovalBroker Approvals => Services.GetRequiredService<ApprovalBroker>();
 
-        public AgentHarness(Action<AgentOptions>? configure = null)
+        public AgentHarness(Action<AgentOptions>? configure = null, Action<IServiceCollection>? configureServices = null)
         {
             var root = Workspace.Root;
             var services = new ServiceCollection();
@@ -108,10 +108,15 @@ namespace Ai_Agent.Tests
             services.AddSingleton<ToolFactory>();
             services.AddSingleton<ILLMClient>(Llm);
             services.AddSingleton<AgentService>();
+            configureServices?.Invoke(services);
             Services = services.BuildServiceProvider();
         }
 
         /// <summary>Runs the agent; every approval request is answered with <paramref name="approve"/>.</summary>
+        /// <summary>Approval prompts the user had to answer (not decisions, not auto-approved cards).</summary>
+        public static List<string> Prompts(List<string> events) =>
+            events.Where(e => e.StartsWith("[APPROVAL_EVENT]") && !e.Contains("\"decision\"") && !e.Contains("\"autoApproved\"")).ToList();
+
         public async Task<List<string>> RunAsync(string task, string mode, bool approve = false, bool reviewEdits = false)
         {
             var events = new List<string>();

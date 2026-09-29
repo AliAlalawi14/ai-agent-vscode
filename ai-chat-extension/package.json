@@ -118,6 +118,25 @@
     "configuration": {
       "title": "Stoat",
       "properties": {
+        "aiChat.mcpServers": {
+          "type": "object",
+          "default": {},
+          "scope": "application",
+          "markdownDescription": "MCP servers Stoat may use, in the usual `mcpServers` format: `{ \"name\": { \"command\": \"npx\", \"args\": [...], \"env\": {...} } }` or `{ \"name\": { \"url\": \"https://...\", \"headers\": {...} } }`. Manage them in the chat panel's Settings. Tokens are kept in secret storage and referenced as `${secret:NAME}`. User settings only: a project can't add servers.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "command": { "type": "string" },
+              "args": { "type": "array", "items": { "type": "string" } },
+              "env": { "type": "object", "additionalProperties": { "type": "string" } },
+              "url": { "type": "string" },
+              "headers": { "type": "object", "additionalProperties": { "type": "string" } },
+              "disabled": { "type": "boolean" },
+              "alwaysAllow": { "type": ["boolean", "array"], "items": { "type": "string" } },
+              "disabledTools": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
         "aiChat.reviewEdits": {
           "type": "boolean",
           "default": true,
@@ -232,6 +251,7 @@
     "watch": "webpack --watch",
     "package": "webpack --mode production --devtool hidden-source-map",
     "compile-tests": "tsc -p . --outDir out",
+    "test:unit": "tsc -p . --outDir out && node --test \"out/unit/**/*.test.js\"",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src",

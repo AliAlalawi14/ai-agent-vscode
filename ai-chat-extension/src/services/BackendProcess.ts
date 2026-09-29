@@ -5,6 +5,7 @@ import * as fs from "fs";
 import * as net from "net";
 import * as path from "path";
 import { providerSecretKey, type ProviderEntry } from "./providerPresets";
+import { SECRET_PREFIX, resolveSecrets, toBackendJson, type McpServers } from "./mcpConfig";
 
 /** Provider keys kept in VS Code SecretStorage and handed to the backend as environment variables. */
 export const PROVIDER_KEYS = [
@@ -65,6 +66,13 @@ export class BackendProcess implements vscode.Disposable {
   async restart(): Promise<BackendConnection | null> {
     this.stop();
     return this.ensureStarted();
+  }
+
+  /** Restarts only a backend that is running (a settings change must not start one nobody asked for). */
+  async restartIfRunning(): Promise<void> {
+    if (this.process && this.process.exitCode === null) {
+      await this.restart();
+    }
   }
 
   /**
@@ -143,8 +151,13 @@ export class BackendProcess implements vscode.Disposable {
     this.process = null;
     this.connection = null;
     if (child && child.exitCode === null) {
-      // The backend kills its own child processes (build/test commands) on shutdown
-      child.kill();
+      if (process.platform === "win32" && child.pid) {
+        // A kill on Windows skips the backend's shutdown code: end the whole tree (MCP servers, commands) with it
+        cp.spawn("taskkill", ["/pid", String(child.pid), "/T", "/F"], { windowsHide: true }).on("error", () => child.kill());
+      } else {
+        // SIGTERM: the backend shuts down gracefully and stops its MCP servers and commands
+        child.kill();
+      }
     }
   }
 
@@ -217,6 +230,16 @@ export class BackendProcess implements vscode.Disposable {
       anyKey = true;
     }
 
+    // MCP servers: user settings only (a cloned project can't add programs to run), secrets resolved here
+    const mcp = mcpServersSetting();
+    if (Object.keys(mcp).length > 0) {
+      const { servers, missing } = await resolveSecrets(mcp, async (name) => this.context.secrets.get(SECRET_PREFIX + name));
+      for (const [server, names] of Object.entries(missing)) {
+        this.output.appendLine(`MCP server '${server}': missing value for ${names.join(", ")} (set it in Settings → MCP servers).`);
+      }
+      env.Mcp__ServersJson = toBackendJson(servers);
+    }
+
     const defaultProvider = vscode.workspace.getConfiguration("aiChat").get<string>("defaultProvider", "")?.trim();
     if (defaultProvider) {env.LLM__DefaultProvider = defaultProvider;}
 
@@ -263,4 +286,9 @@ async function waitForHealth(url: string, token: string, child: cp.ChildProcess)
     await new Promise((r) => setTimeout(r, 500));
   }
   return false;
+}
+
+/** The configured MCP servers, from user settings only (workspace values are ignored on purpose). */
+export function mcpServersSetting(): McpServers {
+  return vscode.workspace.getConfiguration("aiChat").inspect<McpServers>("mcpServers")?.globalValue ?? {};
 }

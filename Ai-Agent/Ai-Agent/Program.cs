@@ -117,6 +117,11 @@ builder.Services.AddSingleton<PromptBuilder>(sp =>
 builder.Services.AddSingleton<ApprovalBroker>();
 builder.Services.AddSingleton<PlanStore>();
 builder.Services.AddSingleton<AuditLog>();
+// MCP servers (external tools): started in the background, stopped with the backend
+builder.Services.Configure<Ai_Agent.Mcp.McpOptions>(builder.Configuration.GetSection("Mcp"));
+builder.Services.AddSingleton<Ai_Agent.Mcp.IMcpConnector, Ai_Agent.Mcp.SdkMcpConnector>();
+builder.Services.AddSingleton<Ai_Agent.Mcp.McpConnectionManager>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<Ai_Agent.Mcp.McpConnectionManager>());
 builder.Services.AddSingleton<AgentService>();
 
 // ── SECURITY ────────────────────────────────────────────────────────────

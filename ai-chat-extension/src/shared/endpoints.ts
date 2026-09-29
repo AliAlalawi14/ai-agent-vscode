@@ -8,6 +8,7 @@
  *   /api/Agent/revert
  *   /api/Agent/plan
  *   /api/Health
+ *   /api/Mcp/status
  *   /v1/chat/completions
  */
 
@@ -21,6 +22,7 @@ export function apiUrl(base: string) {
     plan:    `${b}/api/Agent/plan`,
     models:  `${b}/api/Agent/models`,
     health:  `${b}/api/Health`,
+    mcp:     `${b}/api/Mcp/status`,
     stream:  `${b}/v1/chat/completions`,
   }
 }

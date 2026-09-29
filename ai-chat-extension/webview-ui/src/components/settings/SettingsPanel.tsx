@@ -4,6 +4,7 @@ import { useSettingsStore } from '../../stores/settingsStore'
 import { useSetupStore } from '../../stores/setupStore'
 import { vscode } from '../../services/vscodeApi'
 import { ProviderSetup } from '../setup/ProviderSetup'
+import { McpSettings } from './McpSettings'
 
 interface SettingsPanelProps {
   onClose: () => void
@@ -142,6 +143,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, startAddi
               </div>
             )}
           </div>
+
+          {/* MCP servers */}
+          {!external && <McpSettings />}
 
           {/* Backend */}
           <div>

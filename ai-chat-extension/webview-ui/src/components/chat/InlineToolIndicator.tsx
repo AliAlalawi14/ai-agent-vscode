@@ -1,4 +1,5 @@
 import React from 'react'
+import { friendlyToolName } from '../../stores/mcpStore'
 import { 
   FileSearch, 
   FileEdit, 
@@ -51,7 +52,7 @@ export const InlineToolIndicator: React.FC<InlineToolIndicatorProps> = ({ tool }
       const query = String(args.query).slice(0, 30)
       return query.length > 30 ? query + '...' : query
     }
-    return tool.tool.replace(/_/g, ' ')
+    return friendlyToolName(tool.tool)
   }
 
   return (
@@ -69,7 +70,7 @@ export const InlineToolIndicator: React.FC<InlineToolIndicatorProps> = ({ tool }
           <ToolIcon size={12} />
         )}
       </div>
-      <span className="inline-tool-action">{tool.tool.replace(/_/g, ' ')}</span>
+      <span className="inline-tool-action">{friendlyToolName(tool.tool)}</span>
       <span className="inline-tool-target">{getDescription()}</span>
     </div>
   )

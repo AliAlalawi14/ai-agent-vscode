@@ -307,6 +307,14 @@ export class AgentApiClient {
     return data.models ?? [];
   }
 
+  /** State of the MCP servers the backend started (null: backend without MCP support). */
+  async getMcpStatus(): Promise<{ servers: Array<{ name: string; state: string; error?: string; promptTokens: number; tools: Array<{ name: string; description: string; readOnly: boolean; enabled: boolean; alwaysAllowed: boolean }> }>; configErrors: string[] } | null> {
+    const { urls, headers } = await backend();
+    const response = await fetch(urls.mcp, { headers });
+    if (!response.ok) { return null; }
+    return (await response.json()) as never;
+  }
+
   /** A plan file's current content, parsed by the backend (null if it is gone or not a plan file). */
   async getPlan(path: string, workspace: string): Promise<Record<string, unknown> | null> {
     const params = new URLSearchParams({ path, workspace });

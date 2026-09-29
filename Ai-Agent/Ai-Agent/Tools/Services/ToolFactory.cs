@@ -57,6 +57,11 @@ namespace Ai_Agent.Tools.Services
             else
                 _vectorIndexer.EnsureIndexedInBackground(workspaceRoot);
 
+            // Tools of connected MCP servers ("mcp__server__tool"); read-only ones survive the filter below
+            if (_serviceProvider.GetService<Mcp.McpConnectionManager>() is { } mcp)
+                foreach (var tool in mcp.CreateTools())
+                    registry.RegisterTool(tool);
+
             if (mode is Models.AgentModes.Ask or Models.AgentModes.Plan)
                 registry.RemoveWhere(tool => !tool.IsReadOnly);   // enforced here, not only in the prompt
 

@@ -8,6 +8,7 @@ import { useChangeStore } from './stores/changeStore'
 import { usePlanStore } from './stores/planStore'
 import { useMentionStore } from './stores/mentionStore'
 import { useSetupStore } from './stores/setupStore'
+import { useMcpStore } from './stores/mcpStore'
 import { useAutoSave } from './hooks/useAgentStream'
 
 const App: React.FC = () => {
@@ -51,6 +52,14 @@ const App: React.FC = () => {
 
       if (message.type === 'setupState') {
         useSetupStore.getState().setSetup(message.setup)
+      }
+
+      if (message.type === 'mcpState') {
+        useMcpStore.getState().setState(message.state)
+      }
+
+      if (message.type === 'mcpResult') {
+        useMcpStore.getState().setResult({ ok: message.ok, message: message.message })
       }
 
       if (message.type === 'recentFilesUpdate') {

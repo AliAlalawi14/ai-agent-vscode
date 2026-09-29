@@ -16,6 +16,7 @@ import { agentApiClient } from "./AgentApiClient";
 import { authHeaders, backendConnection, getBackendProcess } from "./backendConnection";
 import { BackendProcess } from "./BackendProcess";
 import { configuredProviders, listProviderModels, removeProvider, saveProvider, setupPresets } from "./providerSetup";
+import { McpPanelService } from "./mcpPanel";
 import { reverseApplyUnifiedPatch } from "./patchUtils";
 import { findStaleBundles, recordLoadedBundles } from "./buildInfo";
 
@@ -29,11 +30,13 @@ export class MessageBroker {
   private currentRun: AbortController | null = null;
   private context: vscode.ExtensionContext;
   private recentFiles: string[] = [];
+  private readonly mcp: McpPanelService;
   private maxRecentFiles = 10;
 
   constructor(webview: vscode.Webview, context: vscode.ExtensionContext) {
     this.webview = webview;
     this.context = context;
+    this.mcp = new McpPanelService(context, (m) => this.postMessage(m));
     // The webview (re)loads its bundle now; remember which build it got
     recordLoadedBundles(context.extensionPath);
     this.setupMessageListener();
@@ -42,7 +45,10 @@ export class MessageBroker {
     // A key added from the command palette (or a restart) updates this panel's status and models
     const backend = getBackendProcess();
     if (backend) {
-      this.disposables.push(backend.onDidStart(() => void this.handleHealthCheck()));
+      this.disposables.push(backend.onDidStart(() => {
+        void this.handleHealthCheck();
+        void this.mcp.postState();   // MCP servers start with the backend
+      }));
     }
   }
 
@@ -246,6 +252,16 @@ export class MessageBroker {
           await getBackendProcess()?.restart();
           await this.handleHealthCheck();
         }
+        break;
+
+      case "getMcp":
+      case "saveMcpServer":
+      case "removeMcpServer":
+      case "setMcpServer":
+      case "setMcpSecret":
+      case "importMcp":
+      case "addMcpPreset":
+        await this.mcp.handle(message);
         break;
 
       case "openExternal":
