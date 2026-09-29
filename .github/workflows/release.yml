@@ -4,6 +4,8 @@
 # One-time setup (repo Settings → Secrets and variables → Actions):
 #   VSCE_PAT  Azure DevOps personal access token with the "Marketplace (Manage)" scope
 #   OVSX_PAT  open-vsx.org access token (after `npx ovsx create-namespace AliAlalawi14`)
+# A store whose secret is missing is skipped; its VSIX files can be uploaded by hand from the
+# GitHub Release (Marketplace: Manage Publishers → the extension → Update, one file per platform).
 #
 # Release: bump "version" in ai-chat-extension/package.json, commit, then
 #   git tag v0.1.0 && git push origin v0.1.0
@@ -77,6 +79,9 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    env:
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -86,21 +91,21 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Publish to the VS Code Marketplace
-        run: npx @vscode/vsce publish --packagePath dist/*.vsix
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-
-      - name: Publish to Open VSX (Cursor, Windsurf, VSCodium)
-        run: |
-          for f in dist/*.vsix; do
-            npx ovsx publish "$f" -p "$OVSX_PAT"
-          done
-        env:
-          OVSX_PAT: ${{ secrets.OVSX_PAT }}
-
+      # First, so the VSIX files are always downloadable (and can be uploaded by hand to the Marketplace)
       - name: GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*.vsix
           generate_release_notes: true
+
+      # Each store is skipped while its token secret isn't set
+      - name: Publish to the VS Code Marketplace
+        if: env.VSCE_PAT != ''
+        run: npx @vscode/vsce publish --packagePath dist/*.vsix
+
+      - name: Publish to Open VSX (Cursor, Windsurf, VSCodium)
+        if: env.OVSX_PAT != ''
+        run: |
+          for f in dist/*.vsix; do
+            npx ovsx publish "$f" -p "$OVSX_PAT"
+          done
