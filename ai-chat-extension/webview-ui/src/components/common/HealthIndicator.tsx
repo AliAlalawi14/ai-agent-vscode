@@ -10,6 +10,7 @@ export const HealthIndicator: React.FC = () => {
     degraded: 'bg-warning',
     disconnected: 'bg-error',
     outdated: 'bg-error',
+    setup: 'bg-warning',
   }
 
   const labels = {
@@ -17,6 +18,7 @@ export const HealthIndicator: React.FC = () => {
     degraded: 'Backend degraded',
     disconnected: 'Backend disconnected',
     outdated: 'Backend outdated — restart it',
+    setup: 'No model provider yet: add one to start',
   }
 
   const timeAgo = lastCheck

@@ -13,6 +13,8 @@ import {
   Loader2,
   Sparkles,
   PauseCircle,
+  Plug,
+  FileText,
 } from "lucide-react";
 import { useChatStore } from "../../stores/chatStore";
 import { useChangeStore } from "../../stores/changeStore";
@@ -29,6 +31,8 @@ import { ChatHeader } from "./ChatHeader";
 import { EmptyState } from "../common/EmptyState";
 import { HistorySidebar } from "../history/HistorySidebar";
 import { SettingsPanel } from "../settings/SettingsPanel";
+import { ProviderSetup } from "../setup/ProviderSetup";
+import { openProviderSettings } from "../../stores/setupStore";
 import { useAgentStream } from "../../hooks/useAgentStream";
 import { useHealthCheck } from "../../hooks/useHealthCheck";
 import { vscode } from "../../services/vscodeApi";
@@ -68,6 +72,7 @@ export const ChatContainer: React.FC = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [settingsAdding, setSettingsAdding] = useState(false);
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
 
   const messages = useChatStore((state) => state.messages);
@@ -82,6 +87,17 @@ export const ChatContainer: React.FC = () => {
   const lastEventAt = useChatStore((state) => state.lastEventAt);
   const limitReached = useChatStore((state) => state.limitReached);
   const backendDetail = useSettingsStore((state) => state.backendDetail);
+  const needsSetup = backendStatus === "setup";
+
+  // "Add provider" links elsewhere (model menu, banners) open Settings
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      setSettingsAdding((e as CustomEvent<{ add?: boolean }>).detail?.add ?? true);
+      setShowSettings(true);
+    };
+    window.addEventListener("ai-agent:open-settings", onOpen);
+    return () => window.removeEventListener("ai-agent:open-settings", onOpen);
+  }, []);
 
   // useShallow: filter() returns a new array each call, which makes zustand v5
   // re-render forever (React error #185) unless the result is compared shallowly.
@@ -268,18 +284,25 @@ export const ChatContainer: React.FC = () => {
       <ChatHeader
         onNewChat={handleNewChat}
         onToggleHistory={toggleHistory}
-        onOpenSettings={() => setShowSettings(true)}
+        onOpenSettings={() => {
+          setSettingsAdding(false);
+          setShowSettings(true);
+        }}
         showHistory={showHistory}
       />
 
       {/* Overlays */}
       {showHistory && <HistorySidebar />}
-      {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+      {showSettings && (
+        <SettingsPanel startAdding={settingsAdding} onClose={() => setShowSettings(false)} />
+      )}
 
       {/* Messages area */}
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
         <div className="max-w-[740px] mx-auto px-4 py-2">
-          {messages.length === 0 ? (
+          {messages.length === 0 && needsSetup ? (
+            <SetupWelcome />
+          ) : messages.length === 0 ? (
             <EmptyState onSelect={handleSend} />
           ) : (
             <div
@@ -421,6 +444,47 @@ export const ChatContainer: React.FC = () => {
         </div>
       )}
 
+      {/* No provider yet but a conversation is open: the setup form is one click away */}
+      {needsSetup && messages.length > 0 && (
+        <div
+          className="mx-4 mb-1 px-3 py-2 rounded-lg bg-warning/10 border border-warning/20
+                        flex items-center gap-2 text-[12px] text-warning animate-slide-up"
+        >
+          <Plug size={13} className="shrink-0" />
+          <span className="flex-1 leading-snug">Add a model provider to continue.</span>
+          <button
+            onClick={() => openProviderSettings()}
+            className="shrink-0 px-2.5 py-1 rounded-md bg-warning/15 hover:bg-warning/25 text-[11px] font-medium"
+          >
+            Add provider
+          </button>
+        </div>
+      )}
+
+      {/* The backend failed to start: say why, with the log one click away */}
+      {backendStatus === "disconnected" && backendDetail && !isStreaming && (
+        <div
+          className="mx-4 mb-1 px-3 py-2 rounded-lg bg-error-subtle border border-error/20
+                        flex items-center gap-2 text-[12px] text-error animate-slide-up"
+        >
+          <AlertCircle size={14} className="shrink-0" />
+          <span className="flex-1 leading-snug">{backendDetail}</span>
+          <button
+            onClick={() => vscode.postMessage({ type: "backendAction", action: "showLog" })}
+            className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-md bg-error/15 hover:bg-error/25
+                       text-[11px] font-medium"
+          >
+            <FileText size={11} /> Log
+          </button>
+          <button
+            onClick={() => openProviderSettings(false)}
+            className="shrink-0 px-2.5 py-1 rounded-md bg-error/15 hover:bg-error/25 text-[11px] font-medium"
+          >
+            Settings
+          </button>
+        </div>
+      )}
+
       {/* Stale backend banner: requests would silently lose history/context */}
       {backendStatus === "outdated" && (
         <div
@@ -504,10 +568,31 @@ export const ChatContainer: React.FC = () => {
         <MessageInput
           onSend={handleSend}
           onStop={handleStop}
-          disabled={isStreaming}
+          disabled={isStreaming || needsSetup}
           isStreaming={isStreaming}
+          {...(needsSetup ? { placeholder: "Add a model provider above to start chatting" } : {})}
         />
       </div>
     </div>
   );
 };
+
+/** First run: nothing to chat with yet, so the empty chat is the setup form. */
+const SetupWelcome: React.FC = () => (
+  <div className="flex flex-col items-center px-2 py-6 animate-fade-in">
+    <div
+      className="inline-flex items-center justify-center w-12 h-12 rounded-2xl
+                    bg-accent-subtle border border-accent/10 mb-3"
+    >
+      <Sparkles size={22} className="text-accent" />
+    </div>
+    <h2 className="text-[16px] font-semibold text-text-primary mb-1">Connect a model</h2>
+    <p className="text-[12px] text-text-muted max-w-[300px] text-center leading-relaxed mb-5">
+      Pick where the AI runs. Paste a key for a cloud provider, or use a model on your own machine.
+      You can add more later in Settings.
+    </p>
+    <div className="w-full max-w-[420px] rounded-xl border border-border bg-bg-primary p-3">
+      <ProviderSetup />
+    </div>
+  </div>
+);

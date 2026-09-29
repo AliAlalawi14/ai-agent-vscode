@@ -7,6 +7,7 @@ import { useConversationStore } from './stores/conversationStore'
 import { useChangeStore } from './stores/changeStore'
 import { usePlanStore } from './stores/planStore'
 import { useMentionStore } from './stores/mentionStore'
+import { useSetupStore } from './stores/setupStore'
 import { useAutoSave } from './hooks/useAgentStream'
 
 const App: React.FC = () => {
@@ -48,6 +49,10 @@ const App: React.FC = () => {
         useMentionStore.getState().setOpenFiles(message.files || [])
       }
 
+      if (message.type === 'setupState') {
+        useSetupStore.getState().setSetup(message.setup)
+      }
+
       if (message.type === 'recentFilesUpdate') {
         useMentionStore.getState().setRecentFiles(message.files || [])
       }
@@ -58,6 +63,7 @@ const App: React.FC = () => {
     // Request init and restoration
     vscode.postMessage({ type: 'init' })
     vscode.postMessage({ type: 'loadConversations' })
+    vscode.postMessage({ type: 'getSetup' })
 
     // Request open and recent files for @-mention dropdown
     vscode.postMessage({ type: 'getOpenFiles' })

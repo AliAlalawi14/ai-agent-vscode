@@ -1,16 +1,7 @@
 import * as vscode from "vscode";
 import { BackendProcess } from "./BackendProcess";
-import { PROVIDER_PRESETS, listModels, providerSecretKey, type ProviderEntry } from "./providerPresets";
-
-const SETTING = "providers";
-
-function readProviders(): ProviderEntry[] {
-  return vscode.workspace.getConfiguration("aiChat").get<ProviderEntry[]>(SETTING, []) ?? [];
-}
-
-async function writeProviders(providers: ProviderEntry[]): Promise<void> {
-  await vscode.workspace.getConfiguration("aiChat").update(SETTING, providers, vscode.ConfigurationTarget.Global);
-}
+import { PROVIDER_PRESETS, listModels, providerSecretKey } from "./providerPresets";
+import { RESERVED_NAMES, readProviders, removeProvider, uniqueName, writeProviders } from "./providerSetup";
 
 /**
  * "AI Agent: Add Provider": preset (or custom URL) → key (secret storage) → models, read live from the provider.
@@ -60,12 +51,12 @@ export function registerProviderCommands(context: vscode.ExtensionContext, backe
     const suggested = pick.preset?.id ?? "custom";
     const name = await vscode.window.showInputBox({
       prompt: "A short name for this provider (shown in the model picker)",
-      value: existing.some((p) => p.name === suggested) ? `${suggested}-2` : suggested,
+      value: uniqueName(suggested, existing),
       ignoreFocusOut: true,
       validateInput: (v) =>
         !/^[a-z0-9][a-z0-9-]*$/.test(v.trim())
           ? "Lowercase letters, digits and dashes"
-          : ["deepseek", "anthropic"].includes(v.trim()) || existing.some((p) => p.name === v.trim())
+          : RESERVED_NAMES.includes(v.trim()) || existing.some((p) => p.name === v.trim())
             ? "That name is already used"
             : undefined,
     });
@@ -144,8 +135,7 @@ export function registerProviderCommands(context: vscode.ExtensionContext, backe
     if (!pick) {
       return;
     }
-    await context.secrets.delete(providerSecretKey(pick.label));
-    await writeProviders(providers.filter((p) => p.name !== pick.label));
+    await removeProvider(context, pick.label);
     await restart();
   });
 

@@ -98,7 +98,15 @@ export type WebviewMessage =
   | { type: "loadConversations" }
   | { type: "saveCurrentSession"; session: SessionState }
   | { type: "getOpenFiles" }
-  | { type: "getRecentFiles" };
+  | { type: "getRecentFiles" }
+  // Model-provider setup in the chat panel (instead of command-palette wizards)
+  | { type: "getSetup" }
+  | { type: "listProviderModels"; requestId: number; provider: ProviderSetupRequest }
+  | { type: "saveProvider"; provider: ProviderSetupRequest; models: string[] }
+  | { type: "removeProvider"; name: string }
+  | { type: "backendAction"; action: "restart" | "showLog" }
+  /** Opens a provider's "get a key" page (https only) */
+  | { type: "openExternal"; url: string };
 
 // Extension -> Webview
 export type ExtensionMessage =
@@ -152,9 +160,14 @@ export type ExtensionMessage =
   | { type: "recentFilesUpdate"; files: string[] }
   | {
       type: "healthStatus";
-      status: "connected" | "degraded" | "disconnected" | "outdated";
+      /** setup = no model provider configured yet: the panel shows its setup form */
+      status: "connected" | "degraded" | "disconnected" | "outdated" | "setup";
       detail?: string;
     }
+  | { type: "setupState"; setup: SetupState }
+  | { type: "providerModels"; requestId: number; models: string[]; error?: string }
+  /** Result of saveProvider/removeProvider (ok = saved and the backend is up again) */
+  | { type: "providerSaved"; ok: boolean; error?: string }
   | {
       type: "modelsAvailable";
       models: Array<{ id: string; name: string; provider: string }>;
@@ -248,4 +261,54 @@ export interface MentionContext {
   code?: string;
   startLine?: number;
   endLine?: number;
+}
+
+// ── Model-provider setup ────────────────────────────────────────────────
+
+/** A provider the setup form offers: built-in (Claude, DeepSeek: key only), OpenAI-compatible preset, or custom URL. */
+export interface SetupPreset {
+  id: string;
+  label: string;
+  detail: string;
+  kind: "builtin" | "openai" | "custom";
+  auth: "bearer" | "api-key" | "none";
+  baseUrl: string;
+  keyUrl?: string;
+  /** Azure: the base URL contains {resource}, asked in the form */
+  needsResource?: boolean;
+  /** Runs on the user's machine (Ollama, LM Studio) */
+  local?: boolean;
+}
+
+/** A provider that is set up (keys are never sent to the webview). */
+export interface ConfiguredProvider {
+  name: string;
+  label: string;
+  models: string[];
+  /** false for the legacy aiChat.openai settings, which are edited in VS Code settings */
+  removable: boolean;
+}
+
+export interface SetupState {
+  /** No provider configured: the backend can't start until one is added */
+  needsSetup: boolean;
+  /** aiChat.backendUrl points at a backend the user runs (providers are configured there) */
+  external: boolean;
+  /** The backend in use, when known (managed: its 127.0.0.1 port; external: the setting) */
+  backendUrl: string | null;
+  /** Why the backend isn't running, when it isn't */
+  problem: string | null;
+  presets: SetupPreset[];
+  providers: ConfiguredProvider[];
+}
+
+/** What the setup form sends to list models or save a provider. */
+export interface ProviderSetupRequest {
+  presetId: string;
+  key?: string;
+  /** Azure resource name */
+  resource?: string;
+  /** Custom server */
+  baseUrl?: string;
+  auth?: "bearer" | "api-key" | "none";
 }

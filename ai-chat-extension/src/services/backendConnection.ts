@@ -7,6 +7,11 @@ export function setBackendProcess(process: BackendProcess): void {
   backend = process;
 }
 
+/** The window's backend manager (null before activation). */
+export function getBackendProcess(): BackendProcess | null {
+  return backend;
+}
+
 /**
  * The backend to talk to: the managed process (started on first use) or the external one from settings.
  * Throws a readable error when it can't be reached, so callers show it in the chat.
@@ -14,9 +19,7 @@ export function setBackendProcess(process: BackendProcess): void {
 export async function backendConnection(): Promise<BackendConnection> {
   const connection = await backend?.ensureStarted();
   if (!connection) {
-    throw new Error(
-      "The AI Agent backend is not running. Set an API key ('AI Agent: Set API Key') or see 'AI Agent: Show Backend Log'.",
-    );
+    throw new Error(backend?.lastProblem ?? "The AI Agent backend is not running. Open the backend log for the reason.");
   }
   return connection;
 }

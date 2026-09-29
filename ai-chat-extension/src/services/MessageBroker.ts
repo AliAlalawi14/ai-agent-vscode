@@ -7,11 +7,15 @@ import type {
   MentionContext,
   HistoryMessage,
   AgentMode,
+  ProviderSetupRequest,
+  SetupState,
 } from "../shared/protocol";
 import { apiUrl } from "../shared/endpoints";
 import { PROTOCOL_VERSION } from "../shared/protocol";
 import { agentApiClient } from "./AgentApiClient";
-import { authHeaders, backendConnection } from "./backendConnection";
+import { authHeaders, backendConnection, getBackendProcess } from "./backendConnection";
+import { BackendProcess } from "./BackendProcess";
+import { configuredProviders, listProviderModels, removeProvider, saveProvider, setupPresets } from "./providerSetup";
 import { reverseApplyUnifiedPatch } from "./patchUtils";
 import { findStaleBundles, recordLoadedBundles } from "./buildInfo";
 
@@ -35,6 +39,11 @@ export class MessageBroker {
     this.setupMessageListener();
     this.setupFileTracking();
     this.setupPlanFileWatcher();
+    // A key added from the command palette (or a restart) updates this panel's status and models
+    const backend = getBackendProcess();
+    if (backend) {
+      this.disposables.push(backend.onDidStart(() => void this.handleHealthCheck()));
+    }
   }
 
   /**
@@ -207,6 +216,39 @@ export class MessageBroker {
           files: this.getRecentFiles(),
         });
         break;
+
+      case "getSetup":
+        await this.postSetupState();
+        break;
+
+      case "listProviderModels": {
+        const result = await listProviderModels(message.provider);
+        this.postMessage({ type: "providerModels", requestId: message.requestId, ...result });
+        break;
+      }
+
+      case "saveProvider":
+        await this.handleSaveProvider(message.provider, message.models);
+        break;
+
+      case "removeProvider":
+        await this.handleRemoveProvider(message.name);
+        break;
+
+      case "backendAction":
+        if (message.action === "showLog") {
+          getBackendProcess()?.showLog();
+        } else {
+          await getBackendProcess()?.restart();
+          await this.handleHealthCheck();
+        }
+        break;
+
+      case "openExternal":
+        if (/^https:\/\//.test(message.url)) {
+          void vscode.env.openExternal(vscode.Uri.parse(message.url));
+        }
+        break;
     }
   }
 
@@ -360,6 +402,13 @@ export class MessageBroker {
     const stale = findStaleBundles(this.context.extensionPath);
     this.postMessage({ type: "extensionStatus", staleBundles: stale });
 
+    // No provider yet: don't try to start; the panel shows its setup form
+    if (await getBackendProcess()?.needsSetup()) {
+      this.postMessage({ type: "healthStatus", status: "setup" });
+      await this.postSetupState();
+      return;
+    }
+
     try {
       // Starts this window's backend on first use (or reaches the external one from settings)
       const connection = await backendConnection();
@@ -394,13 +443,65 @@ export class MessageBroker {
         });
         // Fill the model picker (DeepSeek, Claude, OpenAI-compatible... whatever the backend has configured)
         const models = await agentApiClient.getModels().catch(() => []);
-        if (models.length > 0) { this.postMessage({ type: "modelsAvailable", models }); }
+        this.postMessage({ type: "modelsAvailable", models });
       } else {
         this.postMessage({ type: "healthStatus", status: "degraded" });
       }
-    } catch {
-      this.postMessage({ type: "healthStatus", status: "disconnected" });
+    } catch (error) {
+      this.postMessage({
+        type: "healthStatus",
+        status: "disconnected",
+        detail: error instanceof Error ? error.message : undefined,
+      });
     }
+    await this.postSetupState();
+  }
+
+  private async postSetupState(): Promise<void> {
+    const backend = getBackendProcess();
+    const setup: SetupState = {
+      needsSetup: (await backend?.needsSetup()) ?? false,
+      external: BackendProcess.isExternal(),
+      backendUrl: backend?.current()?.url ?? null,
+      problem: backend?.lastProblem ?? null,
+      presets: setupPresets(),
+      providers: await configuredProviders(this.context.secrets),
+    };
+    this.postMessage({ type: "setupState", setup });
+  }
+
+  /** Saves the provider from the panel's form, restarts the backend and reports whether it came up. */
+  private async handleSaveProvider(provider: ProviderSetupRequest, models: string[]): Promise<void> {
+    try {
+      await saveProvider(this.context, provider, models);
+    } catch (error) {
+      this.postMessage({ type: "providerSaved", ok: false, error: error instanceof Error ? error.message : String(error) });
+      return;
+    }
+    await this.restartAndReport();
+  }
+
+  private async handleRemoveProvider(name: string): Promise<void> {
+    await removeProvider(this.context, name);
+    await this.restartAndReport();
+  }
+
+  private async restartAndReport(): Promise<void> {
+    const backend = getBackendProcess();
+    if (backend && !BackendProcess.isExternal()) {
+      if (await backend.needsSetup()) {
+        backend.stop();   // last provider removed
+      } else {
+        const connection = await backend.restart();
+        if (!connection) {
+          this.postMessage({ type: "providerSaved", ok: false, error: backend.lastProblem ?? "The backend didn't start." });
+          await this.handleHealthCheck();
+          return;
+        }
+      }
+    }
+    this.postMessage({ type: "providerSaved", ok: true });
+    await this.handleHealthCheck();
   }
 
   private handleUpdateSettings(settings: Record<string, unknown>): void {

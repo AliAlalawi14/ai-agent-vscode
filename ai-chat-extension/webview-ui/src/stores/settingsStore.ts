@@ -11,8 +11,7 @@ interface SettingsState {
   selectedModel: string | null
   availableModels: LLMModel[]
 
-  // Backend
-  backendUrl: string
+  // Backend (its address and providers are in setupStore)
   backendStatus: BackendStatus
   /** Why the backend is outdated/degraded, shown in the banner */
   backendDetail: string | null
@@ -31,7 +30,6 @@ interface SettingsState {
   // Actions
   setSelectedModel: (modelId: string) => void
   setAvailableModels: (models: LLMModel[]) => void
-  setBackendUrl: (url: string) => void
   setBackendStatus: (status: BackendStatus, detail?: string | null) => void
   setLastHealthCheck: (timestamp: number) => void
   setShowMetrics: (show: boolean) => void
@@ -50,12 +48,12 @@ function loadMode(): AgentMode {
   return 'agent'
 }
 
-export type BackendStatus = 'connected' | 'degraded' | 'disconnected' | 'outdated'
+/** setup = no model provider configured yet (the chat shows the setup form) */
+export type BackendStatus = 'connected' | 'degraded' | 'disconnected' | 'outdated' | 'setup'
 
 export const useSettingsStore = create<SettingsState>((set) => ({
   selectedModel: null,
   availableModels: [],
-  backendUrl: 'http://localhost:5036',
   backendStatus: 'disconnected',
   backendDetail: null,
   staleBundles: [],
@@ -75,7 +73,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
 
   setSelectedModel: (modelId) => set({ selectedModel: modelId }),
   setAvailableModels: (models) => set({ availableModels: models }),
-  setBackendUrl: (url) => set({ backendUrl: url }),
   setBackendStatus: (status, detail = null) => set({ backendStatus: status, backendDetail: detail }),
   setLastHealthCheck: (timestamp) => set({ lastHealthCheck: timestamp }),
   setShowMetrics: (show) => set({ showMetrics: show }),

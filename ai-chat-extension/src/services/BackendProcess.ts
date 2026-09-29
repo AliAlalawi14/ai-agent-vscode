@@ -28,6 +28,11 @@ export class BackendProcess implements vscode.Disposable {
   private connection: BackendConnection | null = null;
   private starting: Promise<BackendConnection | null> | null = null;
   private readonly output = vscode.window.createOutputChannel("AI Agent Backend");
+  private readonly started = new vscode.EventEmitter<void>();
+  /** Fires when a (re)start succeeded, so open chat panels refresh their status and model list. */
+  readonly onDidStart = this.started.event;
+  /** Why the last start failed (shown in the chat panel); null after a successful start. */
+  lastProblem: string | null = null;
 
   constructor(private readonly context: vscode.ExtensionContext) {}
 
@@ -62,20 +67,41 @@ export class BackendProcess implements vscode.Disposable {
     return this.ensureStarted();
   }
 
+  /**
+   * True when no model provider is configured, so the backend can't start; the chat panel then shows its
+   * setup form. Never true for an external backend (it has its own configuration).
+   */
+  async needsSetup(): Promise<boolean> {
+    if (BackendProcess.isExternal()) {return false;}
+    for (const provider of PROVIDER_KEYS) {
+      if (await this.context.secrets.get(provider.secret)) {return false;}
+    }
+    const openai = vscode.workspace.getConfiguration("aiChat.openai");
+    if (openai.get<string>("baseUrl", "")?.trim() && (openai.get<string[]>("models", []) ?? []).length > 0) {return false;}
+    const providers = vscode.workspace.getConfiguration("aiChat").get<ProviderEntry[]>("providers", []) ?? [];
+    for (const provider of providers) {
+      if (provider.auth === "none" || (await this.context.secrets.get(providerSecretKey(provider.name)))) {return false;}
+    }
+    return true;
+  }
+
+  // No awaited notifications in here: every chat request and health check waits on this start, so a
+  // notification the user never clicks would leave the chat "Thinking..." forever. The panel shows lastProblem.
   private async start(): Promise<BackendConnection | null> {
     const exe = this.findExecutable();
     if (!exe) {
-      const choice = await vscode.window.showErrorMessage(
-        "AI Agent: the backend binary for this platform was not found. Reinstall the extension, " +
-          "or point 'aiChat.backendUrl' at a backend you run yourself.",
-        "Open Settings",
-      );
-      if (choice) {void vscode.commands.executeCommand("workbench.action.openSettings", "aiChat.backend");}
+      this.lastProblem =
+        "The backend binary for this platform was not found. Reinstall the extension, " +
+        "or point 'aiChat.backendUrl' at a backend you run yourself.";
+      this.output.appendLine(this.lastProblem);
       return null;
     }
 
     const env = await this.environment();
-    if (!env) {return null;}   // no API key yet: the user was asked to set one
+    if (!env) {
+      this.lastProblem = "No model provider is set up yet. Add one in the chat panel.";
+      return null;
+    }
 
     const port = await freePort();
     const token = crypto.randomBytes(24).toString("hex");
@@ -97,15 +123,13 @@ export class BackendProcess implements vscode.Disposable {
 
     if (!(await waitForHealth(url, token, child))) {
       this.stop();
-      const choice = await vscode.window.showErrorMessage(
-        "AI Agent: the backend didn't start. See the log for the reason.",
-        "Show Log",
-      );
-      if (choice) {this.showLog();}
+      this.lastProblem = "The backend didn't start. Open the backend log for the reason.";
       return null;
     }
     this.connection = { url, token };
+    this.lastProblem = null;
     this.output.appendLine("Backend ready.");
+    this.started.fire();
     return this.connection;
   }
 
@@ -121,6 +145,7 @@ export class BackendProcess implements vscode.Disposable {
 
   dispose(): void {
     this.stop();
+    this.started.dispose();
     this.output.dispose();
   }
 
@@ -134,7 +159,7 @@ export class BackendProcess implements vscode.Disposable {
     return candidates.find((c) => fs.existsSync(c)) ?? null;
   }
 
-  /** Environment for the backend; null (after asking for a key) when no provider is configured yet. */
+  /** Environment for the backend; null when no provider is configured yet (the chat panel asks for one). */
   private async environment(): Promise<Record<string, string> | null> {
     const env: Record<string, string> = {
       ASPNETCORE_ENVIRONMENT: "Production",
@@ -191,13 +216,6 @@ export class BackendProcess implements vscode.Disposable {
     if (defaultProvider) {env.LLM__DefaultProvider = defaultProvider;}
 
     if (!anyKey) {
-      const choice = await vscode.window.showInformationMessage(
-        "AI Agent needs a model provider: a DeepSeek or Claude key, or any other provider (Gemini, OpenAI, Mistral, a local Ollama...).",
-        "Set API Key",
-        "Add Provider",
-      );
-      if (choice === "Set API Key") {void vscode.commands.executeCommand("aiChat.setApiKey");}
-      if (choice === "Add Provider") {void vscode.commands.executeCommand("aiChat.addProvider");}
       return null;
     }
     return env;

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { ChevronDown, Cpu } from 'lucide-react'
+import { ChevronDown, Cpu, Plus } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settingsStore'
+import { openProviderSettings } from '../../stores/setupStore'
 
 export const ModelSelector: React.FC = () => {
   const [open, setOpen] = useState(false)
@@ -9,6 +10,13 @@ export const ModelSelector: React.FC = () => {
   const selectedModel = useSettingsStore(state => state.selectedModel)
   const availableModels = useSettingsStore(state => state.availableModels)
   const setSelectedModel = useSettingsStore(state => state.setSelectedModel)
+  const backendStatus = useSettingsStore(state => state.backendStatus)
+
+  const addProvider = () => {
+    setOpen(false)
+    // Backend down: open Settings on its status (restart, log) rather than the form
+    openProviderSettings(backendStatus === 'setup' || backendStatus === 'connected')
+  }
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -22,7 +30,8 @@ export const ModelSelector: React.FC = () => {
   }, [open])
 
   const currentModel = availableModels.find(m => m.id === selectedModel)
-  const displayName = currentModel?.name || selectedModel || 'Select Model'
+  const displayName =
+    currentModel?.name || selectedModel || (backendStatus === 'setup' ? 'Add a model' : 'Select Model')
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -58,15 +67,35 @@ export const ModelSelector: React.FC = () => {
               )}
             </button>
           ))}
+          <div className="border-t border-border mt-1 pt-1">
+            <button
+              onClick={addProvider}
+              className="w-full text-left px-3 py-1.5 text-[11px] flex items-center gap-1.5 text-text-muted
+                         hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+            >
+              <Plus size={11} /> Add provider…
+            </button>
+          </div>
         </div>
       )}
 
       {open && availableModels.length === 0 && (
-        <div className="absolute top-full left-0 mt-1 w-48 rounded-lg border border-border 
+        <div className="absolute top-full left-0 mt-1 w-56 rounded-lg border border-border 
                         bg-bg-primary shadow-xl z-50 p-3 animate-fade-in">
-          <p className="text-[11px] text-text-muted text-center">
-            No models available. Check backend connection.
+          <p className="text-[11px] text-text-muted text-center mb-2">
+            {backendStatus === 'setup'
+              ? 'No model provider yet.'
+              : backendStatus === 'connected'
+                ? 'The backend has no models configured.'
+                : 'The backend is not running.'}
           </p>
+          <button
+            onClick={addProvider}
+            className="w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px]
+                       font-medium bg-accent text-white hover:bg-accent-hover"
+          >
+            <Plus size={11} /> {backendStatus === 'setup' ? 'Add a provider' : 'Open settings'}
+          </button>
         </div>
       )}
     </div>
