@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { vscode } from '../services/vscodeApi'
 
 /** Mirrors SetupState in src/shared/protocol.ts (sent by the extension as "setupState"). */
 export interface SetupPreset {
@@ -25,6 +26,8 @@ export interface SetupState {
   external: boolean
   backendUrl: string | null
   problem: string | null
+  /** Edits apply at once and are reviewed afterwards (aiChat.reviewEdits) */
+  reviewEdits: boolean
   presets: SetupPreset[]
   providers: ConfiguredProvider[]
 }
@@ -32,6 +35,8 @@ export interface SetupState {
 interface SetupStore extends SetupState {
   loaded: boolean
   setSetup: (setup: SetupState) => void
+  /** Saves aiChat.reviewEdits (user settings) */
+  setReviewEdits: (on: boolean) => void
 }
 
 export const useSetupStore = create<SetupStore>((set) => ({
@@ -40,9 +45,14 @@ export const useSetupStore = create<SetupStore>((set) => ({
   external: false,
   backendUrl: null,
   problem: null,
+  reviewEdits: true,
   presets: [],
   providers: [],
   setSetup: (setup) => set({ ...setup, loaded: true }),
+  setReviewEdits: (on) => {
+    set({ reviewEdits: on })
+    vscode.postMessage({ type: 'updateSettings', settings: { reviewEdits: on } })
+  },
 }))
 
 /** Opens the Settings panel (from the model menu, banners...); add = straight on the "add provider" form. */

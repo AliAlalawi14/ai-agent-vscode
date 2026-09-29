@@ -101,7 +101,8 @@ namespace Ai_Agent.Agent.Services
             string? model = null,
             string? mode = null,
             ActivePlan? activePlan = null,
-            string? planPath = null)
+            string? planPath = null,
+            bool reviewEdits = false)
         {
             var correlationId = GetCorrelationId();
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -366,7 +367,7 @@ namespace Ai_Agent.Agent.Services
                         }
 
                         var gatedTool = toolRegistry.GetTool(toolName);
-                        if (rejection == null && gatedTool is { RequiresApproval: true } && argsError == null && !IsAutoApproved(mode, toolName, parameters))
+                        if (rejection == null && gatedTool is { RequiresApproval: true } && argsError == null && !IsAutoApproved(mode, toolName, parameters, reviewEdits))
                         {
                             var preview = await gatedTool.PreviewAsync(parameters);
                             if (preview.Error != null)
@@ -437,7 +438,7 @@ namespace Ai_Agent.Agent.Services
 
                         // ── Auto-approved command: still show it as a command card (no buttons) ──
                         if (rejection == null && argsError == null && toolName == "run_terminal" && gatedTool != null &&
-                            IsAutoApproved(mode, toolName, parameters))
+                            IsAutoApproved(mode, toolName, parameters, reviewEdits))
                         {
                             var autoPreview = await gatedTool.PreviewAsync(parameters);
                             if (autoPreview.Error != null)
@@ -737,9 +738,14 @@ namespace Ai_Agent.Agent.Services
         private static string CallSignature(string toolName, Dictionary<string, string> parameters) =>
             toolName + "|" + JsonSerializer.Serialize(new SortedDictionary<string, string>(parameters, StringComparer.Ordinal));
 
-        /// <summary>Auto mode: edits go through without asking; commands only if they are on the auto-approve list.</summary>
-        private bool IsAutoApproved(string mode, string toolName, Dictionary<string, string> parameters)
+        /// <summary>
+        /// Auto mode: edits go through without asking; commands only if they are on the auto-approve list.
+        /// reviewEdits (Agent or Auto): edits go through too, the user reviews them afterwards; commands are unchanged.
+        /// </summary>
+        private bool IsAutoApproved(string mode, string toolName, Dictionary<string, string> parameters, bool reviewEdits)
         {
+            // Only recorded file writes: each one can be undone from the review
+            if (reviewEdits && _fileWritingTools.Contains(toolName) && mode is AgentModes.Agent or AgentModes.Auto) return true;
             if (mode != AgentModes.Auto) return false;
             if (toolName != "run_terminal") return true;
 

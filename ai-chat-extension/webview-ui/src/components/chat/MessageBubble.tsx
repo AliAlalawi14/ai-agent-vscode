@@ -24,6 +24,7 @@ import {
   acceptChange,
   rejectChange,
   revertAppliedChange,
+  keepChanges,
 } from "../../stores/changeActions";
 import { vscode } from "../../services/vscodeApi";
 
@@ -195,6 +196,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                       onAccept={() => acceptChange(change)}
                       onReject={() => rejectChange(change)}
                       onRevert={() => revertAppliedChange(change)}
+                      onKeep={() => keepChanges([change])}
                     />
                   );
                 }

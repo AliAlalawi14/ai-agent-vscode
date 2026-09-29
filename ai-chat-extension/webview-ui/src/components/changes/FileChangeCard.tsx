@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { FileChange } from "../../stores/changeStore";
+import { isPendingReview, type FileChange } from "../../stores/changeStore";
 import {
   Check,
   X,
@@ -20,6 +20,8 @@ interface FileChangeCardProps {
   onAccept: () => void;
   onReject: () => void;
   onRevert: () => void;
+  /** Review: keep an edit that was applied without asking */
+  onKeep?: () => void;
 }
 
 /** Status chip text, color and tooltip for each lifecycle state */
@@ -39,7 +41,13 @@ function statusChip(change: FileChange): { label: string; tone: string; title: s
     case "running":
       return { label: "Running…", tone: "text-accent bg-accent-subtle border-accent/20", title: "" };
     case "applied":
-      return { label: "Applied", tone: "text-success bg-success/10 border-success/20", title: "Written to disk" };
+      return isPendingReview(change)
+        ? {
+            label: "Review",
+            tone: "text-accent bg-accent-subtle border-accent/20",
+            title: "Written to disk. Keep it, or Undo to restore the file.",
+          }
+        : { label: change.review === "kept" ? "Kept" : "Applied", tone: "text-success bg-success/10 border-success/20", title: "Written to disk" };
     case "succeeded":
       return { label: "Succeeded", tone: "text-success bg-success/10 border-success/20", title: "Exit code 0" };
     case "failed":
@@ -64,7 +72,9 @@ export const FileChangeCard: React.FC<FileChangeCardProps> = ({
   onAccept,
   onReject,
   onRevert,
+  onKeep,
 }) => {
+  const inReview = isPendingReview(change);
   const isAwaiting = change.status === "awaiting";
   const isCommand = change.kind === "command";
   // Diff open while the user has to decide; output open when a command failed
@@ -181,7 +191,36 @@ export const FileChangeCard: React.FC<FileChangeCardProps> = ({
               </button>
             </>
           )}
-          {change.status === "applied" && !isCommand && change.changeId && (
+          {inReview && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRevert();
+                }}
+                className="px-2 py-0.5 rounded text-[11px] text-text-secondary border border-border
+                           hover:bg-error-subtle hover:text-error hover:border-error/30 transition-colors
+                           flex items-center gap-1"
+                title="Undo this edit on disk"
+              >
+                <Undo2 size={11} />
+                Undo
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onKeep?.();
+                }}
+                className="px-2 py-0.5 rounded text-[11px] font-medium text-white bg-accent
+                           hover:bg-accent-hover transition-colors flex items-center gap-1"
+                title="Keep this edit"
+              >
+                <Check size={11} />
+                Keep
+              </button>
+            </>
+          )}
+          {change.status === "applied" && !inReview && !isCommand && change.changeId && (
             <button
               onClick={(e) => {
                 e.stopPropagation();

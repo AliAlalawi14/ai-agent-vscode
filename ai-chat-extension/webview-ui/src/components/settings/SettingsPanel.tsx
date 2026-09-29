@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Server, Brain, Eye, Plug, Plus, Trash2, RotateCw, FileText, Loader2 } from 'lucide-react'
+import { X, Server, Brain, Eye, Plug, Plus, Trash2, RotateCw, FileText, Loader2, GitCompare } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useSetupStore } from '../../stores/setupStore'
 import { vscode } from '../../services/vscodeApi'
@@ -31,6 +31,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, startAddi
   const external = useSetupStore(state => state.external)
   const backendUrl = useSetupStore(state => state.backendUrl)
   const problem = useSetupStore(state => state.problem)
+  const reviewEdits = useSetupStore(state => state.reviewEdits)
+  const setReviewEdits = useSetupStore(state => state.setReviewEdits)
 
   const [adding, setAdding] = useState(startAdding)
   const [removing, setRemoving] = useState<string | null>(null)
@@ -169,6 +171,21 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, startAddi
             </div>
           </div>
 
+          {/* Edit review */}
+          <div>
+            <label className="flex items-center gap-1.5 text-[11px] font-medium text-text-secondary mb-1.5">
+              <GitCompare size={12} />
+              Review edits after they're applied
+            </label>
+            <Toggle on={reviewEdits} onChange={setReviewEdits} />
+            <p className="text-[10px] text-text-muted mt-1 leading-snug">
+              {reviewEdits
+                ? 'On: the agent edits files right away; you Keep or Undo each change, each file, or all of them when it finishes.'
+                : 'Off: every edit waits for your Accept before it is written.'}{' '}
+              Commands always ask first.
+            </p>
+          </div>
+
           {/* Current Model (read-only info) */}
           <div>
             <label className="flex items-center gap-1.5 text-[11px] font-medium text-text-secondary mb-1.5">
@@ -189,18 +206,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, startAddi
               <Eye size={12} />
               Show Metrics
             </label>
-            <button
-              onClick={() => setShowMetrics(!showMetrics)}
-              className={`relative w-9 h-5 rounded-full transition-colors
-                ${showMetrics ? 'bg-accent' : 'bg-bg-tertiary border border-border'}
-              `}
-            >
-              <div
-                className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform
-                  ${showMetrics ? 'translate-x-4' : 'translate-x-0.5'}
-                `}
-              />
-            </button>
+            <Toggle on={showMetrics} onChange={setShowMetrics} />
             <p className="text-[10px] text-text-muted mt-1">
               Display token count, latency, and cost after each response.
             </p>
@@ -217,3 +223,18 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, startAddi
     </div>
   )
 }
+
+const Toggle: React.FC<{ on: boolean; onChange: (on: boolean) => void }> = ({ on, onChange }) => (
+  <button
+    onClick={() => onChange(!on)}
+    className={`relative w-9 h-5 rounded-full transition-colors
+      ${on ? 'bg-accent' : 'bg-bg-tertiary border border-border'}
+    `}
+  >
+    <div
+      className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform
+        ${on ? 'translate-x-4' : 'translate-x-0.5'}
+      `}
+    />
+  </button>
+)

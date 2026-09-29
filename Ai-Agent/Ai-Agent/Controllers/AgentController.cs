@@ -56,7 +56,7 @@ namespace Ai_Agent.Controllers
 
                 await foreach (var chunk in _agentService.RunStreamAsync(
                     validation.SanitizedTask, workspace, request.History, request.Context, request.Model,
-                    request.Mode, request.ActivePlan, request.PlanPath))
+                    request.Mode, request.ActivePlan, request.PlanPath, request.ReviewEdits))
                 {
                     const string changePrefix = "[CHANGE_EVENT]";
                     const string changeSuffix = "[/CHANGE_EVENT]";
@@ -506,6 +506,12 @@ namespace Ai_Agent.Controllers
 
         /// <summary>The conversation's plan file (.ai/plans/*.plan.md); when set, the plan is read from it (it wins over ActivePlan)</summary>
         public string? PlanPath { get; set; }
+
+        /// <summary>
+        /// Agent/Auto mode: file edits are applied without waiting and the user reviews them afterwards (Keep/Undo in
+        /// the chat, like Cursor). Commands still wait for approval. False (default) = each edit waits for Accept.
+        /// </summary>
+        public bool ReviewEdits { get; set; }
     }
 
     public class IndexRequest

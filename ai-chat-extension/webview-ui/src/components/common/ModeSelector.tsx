@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronDown, MessageCircleQuestion, ListChecks, Bot, Zap } from "lucide-react";
 import { useSettingsStore, type AgentMode } from "../../stores/settingsStore";
+import { useSetupStore } from "../../stores/setupStore";
 
 const MODES: {
   id: AgentMode;
@@ -20,7 +21,14 @@ export const ModeSelector: React.FC = () => {
   const setMode = useSettingsStore((s) => s.setMode);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const current = MODES.find((m) => m.id === mode) ?? MODES[2];
+  const reviewEdits = useSetupStore((s) => s.reviewEdits);
+  // Agent mode's wording follows the review setting
+  const modes = MODES.map((m) =>
+    m.id === "agent" && reviewEdits
+      ? { ...m, description: "Edits files right away; you Keep or Undo them afterwards. Commands wait for your approval." }
+      : m,
+  );
+  const current = modes.find((m) => m.id === mode) ?? modes[2];
 
   useEffect(() => {
     if (!open) return;
@@ -55,7 +63,7 @@ export const ModeSelector: React.FC = () => {
           className="absolute bottom-full mb-1 left-0 z-20 w-[260px] rounded-lg border border-border
                      bg-bg-secondary shadow-lg py-1 animate-fade-in"
         >
-          {MODES.map((m) => (
+          {modes.map((m) => (
             <button
               key={m.id}
               onClick={() => {

@@ -437,6 +437,7 @@ export function useAgentStream() {
             after: c.after ?? undefined,
             toolUsed: c.toolUsed,
             isNewFile: c.isNewFile,
+            isDeletion: c.isDeletion,
             changeId: c.changeId,
             sessionId: c.sessionId,
             patch: c.patch,

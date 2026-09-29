@@ -112,10 +112,10 @@ namespace Ai_Agent.Tests
         }
 
         /// <summary>Runs the agent; every approval request is answered with <paramref name="approve"/>.</summary>
-        public async Task<List<string>> RunAsync(string task, string mode, bool approve = false)
+        public async Task<List<string>> RunAsync(string task, string mode, bool approve = false, bool reviewEdits = false)
         {
             var events = new List<string>();
-            await foreach (var chunk in Agent.RunStreamAsync(task, Workspace.Root, mode: mode))
+            await foreach (var chunk in Agent.RunStreamAsync(task, Workspace.Root, mode: mode, reviewEdits: reviewEdits))
             {
                 events.Add(chunk);
                 if (chunk.StartsWith("[APPROVAL_EVENT]") && !chunk.Contains("\"decision\"") && !chunk.Contains("\"autoApproved\""))
@@ -168,6 +168,50 @@ namespace Ai_Agent.Tests
             var change = events.Single(e => e.StartsWith("[CHANGE_EVENT]"));
             Assert.Contains("\"approvalId\"", change);
             Assert.Contains(events, e => e.StartsWith("[METRICS_EVENT]"));
+        }
+
+        /// <summary>Approval prompts the user would have had to answer (not decisions, not auto-approved cards).</summary>
+        private static List<string> ApprovalPrompts(List<string> events) =>
+            events.Where(e => e.StartsWith("[APPROVAL_EVENT]") && !e.Contains("\"decision\"") && !e.Contains("\"autoApproved\"")).ToList();
+
+        [Fact]
+        public async Task Review_mode_applies_edits_without_asking_and_records_them_for_undo()
+        {
+            using var h = new AgentHarness();
+            h.Workspace.Write("Calc.cs", Original);
+            h.Llm.Call("edit_file", new { path = "Calc.cs", old_string = "int A() => 1;", new_string = "int A() => 2;" }).Text("done");
+
+            // approve: false would reject any prompt, so the edit landing proves none was shown
+            var events = await h.RunAsync("change A to return 2", "agent", approve: false, reviewEdits: true);
+
+            Assert.Contains("int A() => 2;", h.Workspace.Read("Calc.cs"));
+            Assert.Empty(ApprovalPrompts(events));
+            var change = events.Single(e => e.StartsWith("[CHANGE_EVENT]"));
+            Assert.Contains("\"changeId\"", change);
+        }
+
+        [Fact]
+        public async Task Review_mode_still_asks_before_running_a_command()
+        {
+            using var h = new AgentHarness();
+            h.Llm.Call("run_terminal", new { command = "dotnet build" }).Text("not run");
+
+            var events = await h.RunAsync("build it", "agent", approve: false, reviewEdits: true);
+
+            var prompt = Assert.Single(ApprovalPrompts(events));
+            Assert.Contains("\"command\"", prompt);
+            Assert.Contains(events, e => e.StartsWith("[APPROVAL_EVENT]") && e.Contains("\"rejected\""));
+        }
+
+        [Fact]
+        public async Task Review_mode_is_ignored_in_read_only_modes()
+        {
+            using var h = new AgentHarness();
+            h.Llm.Text("answer");
+
+            await h.RunAsync("change A", "ask", reviewEdits: true);
+
+            Assert.DoesNotContain("edit_file", h.Llm.OfferedTools[0]);
         }
 
         [Fact]

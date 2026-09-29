@@ -25,6 +25,7 @@ import { useSettingsStore } from "../../stores/settingsStore";
 import { usePlanStore } from "../../stores/planStore";
 import { ModeSelector } from "../common/ModeSelector";
 import { PlanBar } from "./PlanBar";
+import { ReviewBar } from "../changes/ReviewBar";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
 import { ChatHeader } from "./ChatHeader";
@@ -420,6 +421,9 @@ export const ChatContainer: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* Edits applied without asking, waiting for Keep / Undo (after the run, like Cursor) */}
+      {!isStreaming && <ReviewBar />}
 
       {/* Plan progress: run the next step without scrolling back to the plan card */}
       <PlanBar onView={handleViewPlan} />

@@ -156,6 +156,10 @@ export class MessageBroker {
         await this.handleRevertFile(message.filePath, message.changeId);
         break;
 
+      case "revertChanges":
+        await this.handleRevertChanges(message.changes);
+        break;
+
       case "resolveApproval":
         await this.handleResolveApproval(message.approvalId, message.approved);
         break;
@@ -287,6 +291,7 @@ export class MessageBroker {
           ...(mode ? { mode } : {}),
           ...(activePlan ? { activePlan } : {}),
           ...(planPath ? { planPath } : {}),
+          reviewEdits: reviewEditsEnabled(),
         },
         this.abortController.signal,
       )) {
@@ -464,6 +469,7 @@ export class MessageBroker {
       external: BackendProcess.isExternal(),
       backendUrl: backend?.current()?.url ?? null,
       problem: backend?.lastProblem ?? null,
+      reviewEdits: reviewEditsEnabled(),
       presets: setupPresets(),
       providers: await configuredProviders(this.context.secrets),
     };
@@ -504,10 +510,11 @@ export class MessageBroker {
     await this.handleHealthCheck();
   }
 
+  /** Preferences changed in the panel apply to every project (user settings, not a .vscode file in the repo). */
   private handleUpdateSettings(settings: Record<string, unknown>): void {
     const config = vscode.workspace.getConfiguration("aiChat");
     for (const [key, value] of Object.entries(settings)) {
-      config.update(key, value, vscode.ConfigurationTarget.Workspace);
+      void config.update(key, value, vscode.ConfigurationTarget.Global);
     }
   }
 
@@ -660,6 +667,26 @@ export class MessageBroker {
     }
   }
 
+  /**
+   * Undo for the review (a whole file, or everything): the changes come newest first, and each undo must
+   * succeed before the older one underneath it can apply. The first failure stops the rest.
+   */
+  private async handleRevertChanges(changes: Array<{ changeId: string; filePath: string }>): Promise<void> {
+    const workspaceRoot = this.getWorkspaceRoot();
+    for (let i = 0; i < changes.length; i++) {
+      try {
+        await agentApiClient.revertFile(changes[i].changeId, undefined, changes[i].filePath, workspaceRoot);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        vscode.window.showErrorMessage(`Could not undo ${changes[i].filePath}: ${message}`);
+        for (const skipped of changes.slice(i)) {
+          this.postMessage({ type: "revertFailed", changeId: skipped.changeId, message });
+        }
+        return;
+      }
+    }
+  }
+
   private async handleResolveApproval(
     approvalId: string,
     approved: boolean,
@@ -755,4 +782,9 @@ export class MessageBroker {
     this.disposables.forEach((d) => d.dispose());
     this.disposables = [];
   }
+}
+
+/** aiChat.reviewEdits (default on): edits apply at once and the user reviews them afterwards. */
+function reviewEditsEnabled(): boolean {
+  return vscode.workspace.getConfiguration("aiChat").get<boolean>("reviewEdits", true);
 }

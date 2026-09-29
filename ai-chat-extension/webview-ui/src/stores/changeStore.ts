@@ -9,6 +9,9 @@ import { create } from "zustand";
  *   expired   → nobody answered in time (or the run was cancelled); nothing changed
  *   reverted  → was applied, then undone via Revert
  * Commands: awaiting → running (after Run) → succeeded | failed (from the tool result)
+ *
+ * Review (aiChat.reviewEdits, like Cursor): edits are applied without asking, so an applied edit
+ * starts with review "pending" until the user clicks Keep (review "kept") or Undo (status "reverted").
  */
 export type ChangeStatus =
   | "awaiting"
@@ -38,9 +41,13 @@ export interface FileChange {
   after?: string;
   toolUsed: string;
   isNewFile?: boolean;
+  /** The change deleted the file */
+  isDeletion?: boolean;
   summary: string;
   patchSize: number;
   status: ChangeStatus;
+  /** Applied without asking: waiting for Keep/Undo in the review */
+  review?: "pending" | "kept";
   timestamp: number;
 }
 
@@ -67,8 +74,12 @@ interface ChangeState {
   addApproval: (approval: ApprovalRequest) => FileChange;
   /** Backend recorded the approved change: fill in changeId/patch and mark applied */
   completeApproval: (approvalId: string, applied: Partial<FileChange>) => boolean;
-  /** A change applied without an approval card (should not happen with the gate; kept for safety) */
+  /** An edit applied without an approval card (review mode, Auto mode): it waits for Keep/Undo */
   addAppliedChange: (change: Omit<FileChange, "id" | "status" | "timestamp" | "kind">) => FileChange;
+  /** Keep: the edits stay, they leave the review */
+  markKept: (ids: string[]) => void;
+  /** Applied edits still waiting for Keep/Undo, oldest first */
+  getPendingReview: () => FileChange[];
   setStatus: (id: string, status: ChangeStatus) => void;
   /** A command card's tool finished: record success/failure and its output */
   finishCommand: (toolCallId: string, ok: boolean, output: string) => boolean;
@@ -127,11 +138,21 @@ export const useChangeStore = create<ChangeState>((set, get) => ({
         change.changeId ||
         `change-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
       status: "applied",
+      review: "pending",
       timestamp: Date.now(),
     };
     set((state) => ({ changes: [...state.changes, newChange] }));
     return newChange;
   },
+
+  markKept: (ids) => {
+    const keep = new Set(ids);
+    set((state) => ({
+      changes: state.changes.map((c) => (keep.has(c.id) && c.review === "pending" ? { ...c, review: "kept" as const } : c)),
+    }));
+  },
+
+  getPendingReview: () => get().changes.filter(isPendingReview),
 
   setStatus: (id, status) => {
     set((state) => ({
@@ -186,3 +207,8 @@ export const useChangeStore = create<ChangeState>((set, get) => ({
       selectedChangeId: null,
     }),
 }));
+
+/** An applied edit nobody has kept or undone yet. */
+export function isPendingReview(c: FileChange): boolean {
+  return c.kind === "file" && c.status === "applied" && c.review === "pending" && Boolean(c.changeId);
+}

@@ -95,6 +95,11 @@
     "configuration": {
       "title": "AI Chat",
       "properties": {
+        "aiChat.reviewEdits": {
+          "type": "boolean",
+          "default": true,
+          "description": "Agent and Auto modes apply file edits right away and you review them afterwards (Keep / Undo per change, per file, or all). Turn off to accept each edit before it is written. Commands always ask first."
+        },
         "aiChat.backendUrl": {
           "type": "string",
           "default": "",

@@ -7,7 +7,7 @@
  * Backend <-> extension contract version. Must equal AgentProtocol.Version in the backend
  * (Ai-Agent/Agent/AgentProtocol.cs); the health check flags a mismatch as "outdated".
  */
-export const PROTOCOL_VERSION = 4;
+export const PROTOCOL_VERSION = 5;
 
 // ── Message Types ───────────────────────────────────────────────────────
 
@@ -76,6 +76,8 @@ export type WebviewMessage =
   /** Open the plan's Markdown file in the editor */
   | { type: "openPlanFile"; path: string }
   | { type: "revertFile"; filePath: string; changeId?: string }
+  /** Undo several applied changes in this order (newest first), stopping at the first that can't be undone */
+  | { type: "revertChanges"; changes: Array<{ changeId: string; filePath: string }> }
   | { type: "resolveApproval"; approvalId: string; approved: boolean }
   | {
       type: "openDiff";
@@ -223,6 +225,8 @@ export interface AgentRunRequest {
   activePlan?: unknown;
   /** The plan's file; when set the backend reads the plan from it (so the user's edits count) */
   planPath?: string;
+  /** Agent/Auto: edits apply at once and are reviewed afterwards (Keep/Undo); commands still ask */
+  reviewEdits?: boolean;
 }
 
 /** ask = read-only Q&A, plan = read-only + plan, agent = edits with approval, auto = auto-approved edits */
@@ -298,6 +302,8 @@ export interface SetupState {
   backendUrl: string | null;
   /** Why the backend isn't running, when it isn't */
   problem: string | null;
+  /** aiChat.reviewEdits: edits apply at once and are reviewed afterwards */
+  reviewEdits: boolean;
   presets: SetupPreset[];
   providers: ConfiguredProvider[];
 }
