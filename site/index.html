@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="styles.css?v=2">
+<link rel="stylesheet" href="styles.css?v=3">
 <script>document.documentElement.classList.add('js')</script>
 <script type="application/ld+json">
 {
@@ -89,6 +89,7 @@
   <div class="wrap">
     <a class="brand" href="./"><img src="logo.png" alt="" width="30" height="30">Stoat</a>
     <nav aria-label="Main">
+      <a href="#tour" class="hide-sm">Tour</a>
       <a href="#features" class="hide-sm">Features</a>
       <a href="compare.html">Compare</a>
       <a href="#guides" class="hide-sm">Guides</a>
@@ -139,6 +140,78 @@
       <span>Claude</span><span>GPT</span><span>Gemini</span><span>DeepSeek</span><span>Mistral</span><span>Grok</span><span>OpenRouter</span><span>Ollama</span><span>LM Studio</span>
     </div>
   </div>
+
+  <!-- Real screenshots: tabs on the left, framed shot on the right (all panels stack when JS is off) -->
+  <section id="tour">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">See it in action</span>
+        <h2>A real project, start to finish</h2>
+        <p class="lead">Screenshots from Stoat building an ASP.NET Core e-commerce API: planned first, then built step by step, with every change waiting for review.</p>
+      </div>
+
+      <div class="tour reveal">
+        <div class="tour-tabs" role="tablist" aria-label="Screenshots">
+          <button class="tour-tab active" role="tab" id="tab-review" aria-controls="shot-review" aria-selected="true">
+            <span class="n">01</span><span><b>Review every change</b><small>Keep or Undo each file, approve each command</small></span></button>
+          <button class="tour-tab" role="tab" id="tab-diagram" aria-controls="shot-diagram" aria-selected="false" tabindex="-1">
+            <span class="n">02</span><span><b>Plans with diagrams</b><small>Data models and flows drawn inside the plan</small></span></button>
+          <button class="tour-tab" role="tab" id="tab-plan" aria-controls="shot-plan" aria-selected="false" tabindex="-1">
+            <span class="n">03</span><span><b>A plan you can edit</b><small>Goal, approach and steps, in Markdown</small></span></button>
+          <button class="tour-tab" role="tab" id="tab-providers" aria-controls="shot-providers" aria-selected="false" tabindex="-1">
+            <span class="n">04</span><span><b>Any provider</b><small>Cloud keys, local models or your own server</small></span></button>
+        </div>
+
+        <div class="tour-stage">
+          <figure class="shot active" role="tabpanel" id="shot-review" aria-labelledby="tab-review">
+            <div class="shot-frame">
+              <div class="mock-bar"><i></i><i></i><i></i><span class="title"><img src="logo.png" alt="">Stoat · Ecommerce.API</span></div>
+              <button class="shot-zoom" aria-label="Enlarge screenshot: Review every change">
+                <img src="screenshots/agent-review.png" width="1593" height="727" alt="Stoat in VS Code: the editor shows a new file as a green diff; the Stoat panel lists edits with Review, Undo and Keep buttons, a dotnet build command waiting for approval, and a summary of 21 files changed with Build passed and Plan step 4 of 7.">
+              </button>
+            </div>
+            <figcaption>The diff opens in the editor while the panel tracks each edit. <b>dotnet build</b> waits for your Run, and the summary shows <b>21 files · Build passed</b> with the plan at step 4 of 7.</figcaption>
+          </figure>
+
+          <figure class="shot" role="tabpanel" id="shot-diagram" aria-labelledby="tab-diagram">
+            <div class="shot-frame">
+              <div class="mock-bar"><i></i><i></i><i></i><span class="title"><img src="logo.png" alt="">plan.md</span></div>
+              <button class="shot-zoom" aria-label="Enlarge screenshot: Plans with diagrams">
+                <img src="screenshots/plan-diagram.png" width="1601" height="766" loading="lazy" alt="An entity-relationship diagram in the plan linking User, Category, Product, Order, CartItem and OrderItem, next to the Stoat panel writing order service files.">
+              </button>
+            </div>
+            <figcaption>Plan mode draws the data model before any code is written, and Build works through it on the right.</figcaption>
+          </figure>
+
+          <figure class="shot" role="tabpanel" id="shot-plan" aria-labelledby="tab-plan">
+            <div class="shot-frame">
+              <div class="mock-bar"><i></i><i></i><i></i><span class="title"><img src="logo.png" alt="">plan.md</span></div>
+              <button class="shot-zoom" aria-label="Enlarge screenshot: A plan you can edit">
+                <img src="screenshots/plan-document.png" width="1126" height="721" loading="lazy" alt="A Markdown plan titled E-commerce API: Core Domain, with Goal, Approach and Design sections that reference the project's existing classes.">
+              </button>
+            </div>
+            <figcaption>The plan reads your code first, so it extends what's there and names the gaps it will fix.</figcaption>
+          </figure>
+
+          <figure class="shot split" role="tabpanel" id="shot-providers" aria-labelledby="tab-providers">
+            <div class="shot-frame">
+              <div class="mock-bar"><i></i><i></i><i></i><span class="title"><img src="logo.png" alt="">Settings</span></div>
+              <button class="shot-zoom" aria-label="Enlarge screenshot: Any provider">
+                <img src="screenshots/providers.png" width="505" height="782" loading="lazy" alt="Stoat's model provider settings: DeepSeek, Anthropic, Google Gemini, Mistral, xAI, Groq, OpenRouter, Together AI, Fireworks, OpenAI and Azure OpenAI, plus Ollama and LM Studio on your machine and a custom server.">
+              </button>
+            </div>
+            <figcaption><b>Eleven cloud providers</b>, Ollama and LM Studio with no key, or any OpenAI-compatible server. Keys stay in VS Code's secret storage, never in settings files.
+              <div class="chips"><span class="chip">DeepSeek</span><span class="chip">Claude</span><span class="chip">Gemini</span><span class="chip">OpenAI</span><span class="chip">Mistral</span><span class="chip">Grok</span><span class="chip">Groq</span><span class="chip">OpenRouter</span><span class="chip local">Ollama · local</span><span class="chip local">LM Studio · local</span></div></figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="lightbox" aria-label="Enlarged screenshot">
+    <button class="lightbox-close" aria-label="Close">×</button>
+    <img alt="">
+  </dialog>
 
   <!-- Feature breakdown -->
   <section id="features">
@@ -335,6 +408,43 @@
       });
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
     items.forEach(function (el) { io.observe(el); });
+  })();
+
+  // Screenshot tour: tabs (click + arrow keys) and a click-to-enlarge lightbox
+  (function () {
+    var tabs = [].slice.call(document.querySelectorAll('.tour-tab'));
+    function select(tab, focus) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.classList.toggle('active', on);
+        t.setAttribute('aria-selected', on);
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute('aria-controls')).classList.toggle('active', on);
+      });
+      if (focus) tab.focus();
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { select(t); });
+      t.addEventListener('keydown', function (e) {
+        var d = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+        if (!d) return;
+        e.preventDefault();
+        select(tabs[(i + d + tabs.length) % tabs.length], true);
+      });
+    });
+
+    var box = document.querySelector('.lightbox');
+    if (!box || !box.showModal) return;
+    var big = box.querySelector('img');
+    document.querySelectorAll('.shot-zoom').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var img = b.querySelector('img');
+        big.src = img.src; big.alt = img.alt;
+        box.showModal();
+      });
+    });
+    box.querySelector('.lightbox-close').addEventListener('click', function () { box.close(); });
+    box.addEventListener('click', function (e) { if (e.target === box) box.close(); });
   })();
 </script>
 </body>
