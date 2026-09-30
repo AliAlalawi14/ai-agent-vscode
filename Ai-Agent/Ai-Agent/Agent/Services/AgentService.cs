@@ -125,7 +125,7 @@ namespace Ai_Agent.Agent.Services
                 correlationId, Truncate(userRequest, 100), workspaceRoot, toolDefinitions.Count);
 
             var promptClock = System.Diagnostics.Stopwatch.StartNew();
-            var systemPrompt = await _promptBuilder.BuildSystemPromptAsync(toolRegistry, workspaceRoot, mode);
+            var systemPrompt = await _promptBuilder.BuildSystemPromptAsync(toolRegistry, workspaceRoot, mode, verify);
             promptClock.Stop();
             _logger.LogInformation(
                 "[TRACE] PROMPT_BUILT | Corr={Corr} | Mode={Mode} | Size={PromptSize} chars | Duration={DurationMs}ms",

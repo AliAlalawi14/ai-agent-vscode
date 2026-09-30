@@ -83,6 +83,22 @@ namespace Ai_Agent.Tests
         }
 
         [Fact]
+        public async Task System_prompt_leaves_the_build_to_the_verify_loop_when_it_is_on()
+        {
+            using var h = new AgentHarness();
+            var root = h.Workspace.Root;
+            var builder = h.Services.GetRequiredService<PromptBuilder>();
+            var registry = h.Services.GetRequiredService<ToolFactory>().CreateRegistry(root);
+
+            var plain = await builder.BuildSystemPromptAsync(registry, root, AgentModes.Agent);
+            var verified = await builder.BuildSystemPromptAsync(registry, root, AgentModes.Agent, verify: true);
+
+            Assert.Contains("run `dotnet build`", plain);
+            Assert.DoesNotContain("run `dotnet build`", verified);
+            Assert.Contains("build and tests run automatically", verified);
+        }
+
+        [Fact]
         public void Cost_bills_cached_input_at_the_cache_price()
         {
             var tracker = new CostTracker(Options.Create(new LLMOptions()), NullLogger<CostTracker>.Instance);

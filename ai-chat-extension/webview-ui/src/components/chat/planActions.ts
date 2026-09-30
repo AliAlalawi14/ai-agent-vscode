@@ -23,7 +23,8 @@ export function executePlan(what: "step" | "all" | "selected", step?: number, se
         steps.map((n) => `${n}. ${plan.steps[n - 1].title}`).join("\n"),
     );
   } else {
-    requestRun("Implement the remaining plan steps in order, one at a time.");
+    // "one at a time" made models stop after the first step and ask to continue
+    requestRun("Implement all remaining plan steps in order, going straight on to the next step when one is done.");
   }
 }
 
