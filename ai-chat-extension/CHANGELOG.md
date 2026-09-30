@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.2
+
+### Fixed
+- Plan diagrams no longer re-render (and flash "Rendering diagram…") on every update while a reply streams.
+- Build all runs every remaining plan step without stopping to ask after each one.
+- With the automatic check on, the agent no longer runs the build itself first, so it doesn't run twice per step.
+- One summary per task, without relisting the changed files.
+
 ## 0.3.0: checks its own work, predictable cost, offline autocomplete
 
 ### Added
